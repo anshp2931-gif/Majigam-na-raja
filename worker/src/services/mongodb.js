@@ -98,10 +98,24 @@ class D1Collection {
     const placeholders = keys.map(() => '?').join(', ');
     const values = keys.map(k => document[k] instanceof Date ? document[k].toISOString() : document[k]);
     
-    return this.db.prepare(`
-      INSERT INTO ${this.collectionName} (${keys.join(', ')})
-      VALUES (${placeholders})
-    `).bind(...values).run();
+    try {
+      return await this.db.prepare(`
+        INSERT INTO ${this.collectionName} (${keys.join(', ')})
+        VALUES (${placeholders})
+      `).bind(...values).run();
+    } catch (err) {
+      if (this.collectionName === 'funds_contributions' && err?.message?.includes('has no column named')) {
+        const coreKeys = ['id', 'contributorName', 'amount', 'date', 'paymentMode', 'note', 'imageUrl', 'imagePublicId', 'createdAt', 'updatedAt'];
+        const validKeys = keys.filter(k => coreKeys.includes(k));
+        const validPlaceholders = validKeys.map(() => '?').join(', ');
+        const validValues = validKeys.map(k => document[k] instanceof Date ? document[k].toISOString() : document[k]);
+        return await this.db.prepare(`
+          INSERT INTO ${this.collectionName} (${validKeys.join(', ')})
+          VALUES (${validPlaceholders})
+        `).bind(...validValues).run();
+      }
+      throw err;
+    }
   }
 
   async updateOne(filter, update) {
