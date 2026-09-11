@@ -4,7 +4,8 @@ import { generateDaanPDF, generateExpensesPDF, generateSummaryPDF } from '../uti
 import Loading from '../components/Loading';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Download, IndianRupee, PieChart, Users, TrendingUp, TrendingDown, Eye, Wallet, ShieldCheck, Sparkles, ChevronRight, Activity } from 'lucide-react';
+import ReceiptModal from '../components/ReceiptModal';
+import { Download, IndianRupee, PieChart, Users, TrendingUp, TrendingDown, Eye, Wallet, ShieldCheck, Sparkles, ChevronRight, Activity, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const formatMoney = (amount) => `₹${Number(amount).toLocaleString('en-IN')}`;
@@ -28,6 +29,7 @@ export default function FundsPublic() {
   const [contributions, setContributions] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeReceipt, setActiveReceipt] = useState(null);
 
   // Filters
   const [cSearch, setCSearch] = useState('');
@@ -310,13 +312,24 @@ export default function FundsPublic() {
                               </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <span className="font-black text-emerald-400 text-2xl drop-shadow-[0_0_8px_rgba(16,185,129,0.3)] block">{formatMoney(c.amount)}</span>
-                            {c.imageUrl && (
-                              <a href={c.imageUrl} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-blue-400 hover:text-amber-400 transition-colors bg-blue-500/10 px-3 py-1 rounded-lg">
-                                <Eye className="w-3.5 h-3.5"/> Proof
-                              </a>
-                            )}
+                          <div className="text-right flex flex-col items-end">
+                            <span className="font-black text-emerald-400 text-xl sm:text-2xl drop-shadow-[0_0_8px_rgba(16,185,129,0.3)] block">{formatMoney(c.amount)}</span>
+                            <div className="mt-2 flex items-center gap-1.5 flex-wrap justify-end">
+                              <button
+                                onClick={() => setActiveReceipt(c)}
+                                className="inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-white transition-colors bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/30 px-2.5 py-1 rounded-lg"
+                                title="View & Download Official Receipt (પહોંચ)"
+                              >
+                                <span>🧾</span>
+                                <span className="hidden sm:inline">પહોંચ / Receipt</span>
+                                <span className="sm:hidden">પહોંચ</span>
+                              </button>
+                              {c.imageUrl && (
+                                <a href={c.imageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-blue-400 hover:text-white transition-colors bg-blue-500/10 hover:bg-blue-500/30 border border-blue-500/20 px-2.5 py-1 rounded-lg">
+                                  <Eye className="w-3.5 h-3.5"/> Proof
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </motion.div>
                       ))}
@@ -441,6 +454,14 @@ export default function FundsPublic() {
       `}</style>
       
       <Footer />
+
+      {/* Donation Receipt Modal */}
+      {activeReceipt && (
+        <ReceiptModal
+          contribution={activeReceipt}
+          onClose={() => setActiveReceipt(null)}
+        />
+      )}
     </div>
   );
 }

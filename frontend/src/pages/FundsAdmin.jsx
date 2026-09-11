@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { fundsService } from '../services/fundsService';
 import { generateDaanPDF, generateExpensesPDF, generateSummaryPDF } from '../utils/pdfGenerator';
 import Loading from '../components/Loading';
-import { Download, Plus, Trash2, X, PieChart, Users, ArrowLeft } from 'lucide-react';
+import ReceiptModal from '../components/ReceiptModal';
+import { Download, Plus, Trash2, X, PieChart, Users, ArrowLeft, FileText } from 'lucide-react';
 
 const formatMoney = (amount) => `₹${Number(amount).toLocaleString('en-IN')}`;
 
@@ -16,6 +17,7 @@ export default function FundsAdmin() {
   // Forms Modals
   const [showAddContribution, setShowAddContribution] = useState(false);
   const [showAddExpense, setShowAddExpense] = useState(false);
+  const [activeReceipt, setActiveReceipt] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -194,12 +196,22 @@ export default function FundsAdmin() {
                       <h4 className="font-bold text-gray-800 text-sm truncate">{c.contributorName}</h4>
                       <div className="text-xs text-gray-500 mt-0.5">
                         {new Date(c.date).toLocaleDateString('en-IN')} • {c.paymentMode}
+                        {c.phoneNumber && <span className="ml-1 text-gray-600 font-medium">• 📞 {c.phoneNumber}</span>}
                       </div>
                       {c.imageUrl && <a href={c.imageUrl} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">View Proof</a>}
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => setActiveReceipt(c)}
+                        className="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-2 py-1 rounded text-xs font-bold transition-colors"
+                        title="View / Download / Share Receipt (પહોંચ)"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-amber-600" />
+                        <span className="hidden sm:inline">પહોંચ / Receipt</span>
+                        <span className="sm:hidden">પહોંચ</span>
+                      </button>
                       <span className="font-black text-green-700 text-sm sm:text-base whitespace-nowrap">{formatMoney(c.amount)}</span>
-                      <button onClick={() => handleDeleteContribution(c.id)} className="text-red-500 hover:text-red-700 p-1 flex-shrink-0">
+                      <button onClick={() => handleDeleteContribution(c.id)} className="text-red-500 hover:text-red-700 p-1 flex-shrink-0" title="Delete Contribution">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -260,7 +272,13 @@ export default function FundsAdmin() {
       {showAddContribution && (
         <ContributionModal 
           onClose={() => setShowAddContribution(false)} 
-          onSuccess={() => { setShowAddContribution(false); fetchData(); }} 
+          onSuccess={(created) => { 
+            setShowAddContribution(false); 
+            fetchData(); 
+            if (created) {
+              setActiveReceipt(created);
+            }
+          }} 
         />
       )}
 
@@ -269,6 +287,14 @@ export default function FundsAdmin() {
         <ExpenseModal 
           onClose={() => setShowAddExpense(false)} 
           onSuccess={() => { setShowAddExpense(false); fetchData(); }} 
+        />
+      )}
+
+      {/* Donation Receipt Modal */}
+      {activeReceipt && (
+        <ReceiptModal 
+          contribution={activeReceipt} 
+          onClose={() => setActiveReceipt(null)} 
         />
       )}
     </div>
@@ -283,8 +309,8 @@ function ContributionModal({ onClose, onSuccess }) {
     setLoading(true);
     const fd = new FormData(e.target);
     try {
-      await fundsService.addContribution(fd);
-      onSuccess();
+      const res = await fundsService.addContribution(fd);
+      onSuccess(res?.data || null);
     } catch(err) {
       alert('Failed to add contribution');
       console.error(err);
@@ -300,37 +326,42 @@ function ContributionModal({ onClose, onSuccess }) {
           <h3 className="font-bold text-lg text-ualg-navy">Add Contribution</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-800"><X className="w-5 h-5"/></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Contributor Name *</label>
-            <input name="contributorName" required className="w-full border p-2 rounded" />
+            <input name="contributorName" required placeholder="e.g. Ramesh Patel" className="w-full border p-2 rounded focus:ring-2 focus:ring-ualg-blue outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number (Optional)</label>
+            <input name="phoneNumber" type="tel" placeholder="e.g. 9876543210 (for WhatsApp receipt)" className="w-full border p-2 rounded focus:ring-2 focus:ring-ualg-blue outline-none" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹) *</label>
-            <input name="amount" type="number" min="1" required className="w-full border p-2 rounded" />
+            <input name="amount" type="number" min="1" required placeholder="e.g. 5001" className="w-full border p-2 rounded focus:ring-2 focus:ring-ualg-blue outline-none" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
-            <input name="date" type="date" required className="w-full border p-2 rounded" />
+            <input name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full border p-2 rounded focus:ring-2 focus:ring-ualg-blue outline-none" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Payment Mode *</label>
-            <select name="paymentMode" required className="w-full border p-2 rounded">
+            <select name="paymentMode" required className="w-full border p-2 rounded focus:ring-2 focus:ring-ualg-blue outline-none">
               <option value="UPI">UPI</option>
               <option value="Cash">Cash</option>
               <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Note (Optional)</label>
-            <textarea name="note" className="w-full border p-2 rounded" rows="2"></textarea>
+            <textarea name="note" placeholder="e.g. Ganpati Mahotsav Prasad / Aagman" className="w-full border p-2 rounded focus:ring-2 focus:ring-ualg-blue outline-none" rows="2"></textarea>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Payment Proof Image (Optional)</label>
             <input name="image" type="file" accept="image/*" className="w-full text-sm" />
           </div>
-          <button type="submit" disabled={loading} className="w-full bg-ualg-navy text-white font-bold py-3 rounded-lg hover:bg-ualg-blue transition disabled:opacity-50">
-            {loading ? 'Saving...' : 'Save Contribution'}
+          <button type="submit" disabled={loading} className="w-full bg-ualg-navy text-white font-bold py-3 rounded-lg hover:bg-ualg-blue transition disabled:opacity-50 flex items-center justify-center gap-2">
+            {loading ? 'Saving & Generating Receipt...' : 'Save & Generate Receipt'}
           </button>
         </form>
       </div>
