@@ -71,27 +71,25 @@ export default function ReceiptModal({ contribution, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border-2 border-amber-400/40 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-gray-200 animate-in fade-in zoom-in-95 duration-150">
         
-        {/* ── Modal Header with Gold Accents ── */}
-        <div className="px-5 py-3.5 bg-gradient-to-r from-slate-950 via-purple-950 to-slate-950 text-white flex items-center justify-between flex-shrink-0 border-b-2 border-amber-500/50 relative overflow-hidden">
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 flex items-center justify-center shadow-lg shadow-amber-500/30">
-              <span className="text-base">🪔</span>
-            </div>
+        {/* ── Professional Modal Header ── */}
+        <div className="px-5 py-3.5 bg-emerald-950 text-white flex items-center justify-between flex-shrink-0 border-b-2 border-amber-500">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">🧾</span>
             <div>
-              <h3 className="font-black text-sm sm:text-base leading-tight text-white flex items-center gap-1.5">
+              <h3 className="font-bold text-sm sm:text-base leading-tight text-white flex items-center gap-1.5">
                 <span>દાન પહોંચ</span>
-                <span className="text-amber-400 text-xs">✦</span>
-                <span className="text-amber-300">Donation Receipt</span>
+                <span className="text-amber-400 text-xs">•</span>
+                <span className="text-amber-200">Donation Receipt</span>
               </h3>
-              <p className="text-[11px] text-amber-200/80 font-mono">UNITY A LIVE GROUP • {receiptNo}</p>
+              <p className="text-[11px] text-emerald-300 font-mono">UNITY A LIVE GROUP • {receiptNo}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors flex-shrink-0 border border-white/10"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors flex-shrink-0"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -99,24 +97,24 @@ export default function ReceiptModal({ contribution, onClose }) {
         </div>
 
         {/* ── Scrollable Receipt Preview Area ── */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6 bg-gradient-to-b from-slate-900/10 via-amber-50/30 to-slate-100 flex justify-center items-start">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5 bg-slate-100 flex justify-center items-start">
           <div className="w-full flex justify-center">
             <FundReceipt ref={receiptRef} contribution={contribution} />
           </div>
         </div>
 
         {/* ── Action Controls Bar ── */}
-        <div className="p-3.5 sm:p-4 bg-white border-t border-gray-100 flex-shrink-0 space-y-2.5">
+        <div className="p-3.5 sm:p-4 bg-white border-t border-gray-200 flex-shrink-0 space-y-2.5">
           {/* Primary Action Buttons */}
           <div className="grid grid-cols-2 gap-2.5">
             {/* Download PDF */}
             <button
               onClick={handleDownloadPDF}
               disabled={downloading}
-              className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-black text-xs sm:text-sm text-white shadow-lg transition-all active:scale-98 ${
+              className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-white shadow-md transition-all active:scale-98 ${
                 downloadSuccess
-                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
-                  : 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 shadow-amber-600/30'
+                  ? 'bg-emerald-700 hover:bg-emerald-800'
+                  : 'bg-emerald-900 hover:bg-emerald-800'
               } disabled:opacity-50`}
             >
               {downloading ? (
@@ -140,7 +138,7 @@ export default function ReceiptModal({ contribution, onClose }) {
             {/* WhatsApp Share */}
             <button
               onClick={handleWhatsAppShare}
-              className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-black text-xs sm:text-sm text-white bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 shadow-lg shadow-emerald-500/25 transition-all active:scale-98"
+              className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-[#25D366] hover:bg-[#1ebd59] shadow-md transition-all active:scale-98"
             >
               <MessageCircle className="w-4 h-4 fill-white" />
               <span>WhatsApp શેર</span>
@@ -151,9 +149,9 @@ export default function ReceiptModal({ contribution, onClose }) {
           <div className="flex items-center justify-between gap-2 pt-1">
             <button
               onClick={handleCopyLink}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition active:scale-98"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition active:scale-98"
             >
-              <span>{copied ? '✓ લિંક કૉપિ થઈ!' : '🔗 લિંક કૉપિ કરો (Copy Link)'}</span>
+              <span>{copied ? '✓ લિંક કૉપિ થઈ!' : '🔗 લિંક કૉપિ (Copy Link)'}</span>
             </button>
 
             <button
@@ -161,7 +159,7 @@ export default function ReceiptModal({ contribution, onClose }) {
               disabled={sharing}
               className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-semibold transition active:scale-98"
             >
-              <Share2 className="w-3.5 h-3.5 text-ualg-blue" />
+              <Share2 className="w-3.5 h-3.5 text-emerald-700" />
               <span>{sharing ? 'શેર...' : 'Mobile Share'}</span>
             </button>
 
@@ -172,11 +170,6 @@ export default function ReceiptModal({ contribution, onClose }) {
               બંધ / Close
             </button>
           </div>
-
-          {/* Mobile tip */}
-          <p className="text-[10px] text-center text-gray-400">
-            🌺 ગણપતિ બાપ્પા મોરિયા! પહોંચ PDF ડાઉનલોડ અથવા વોટ્સએપ પર શેર કરી શકો છો.
-          </p>
         </div>
 
       </div>

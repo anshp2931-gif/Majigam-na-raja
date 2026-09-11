@@ -178,10 +178,10 @@ export default function ReceiptView() {
                 <button
                   onClick={handleDownloadPDF}
                   disabled={downloading}
-                  className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-white shadow-lg transition-all active:scale-98 ${
+                  className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-white shadow-md transition-all active:scale-98 ${
                     downloadSuccess
-                      ? 'bg-emerald-600 hover:bg-emerald-700'
-                      : 'bg-ualg-blue hover:bg-blue-600'
+                      ? 'bg-emerald-700 hover:bg-emerald-800'
+                      : 'bg-emerald-900 hover:bg-emerald-800'
                   } disabled:opacity-50`}
                 >
                   {downloading ? (
@@ -205,7 +205,7 @@ export default function ReceiptView() {
                 {/* WhatsApp Share */}
                 <button
                   onClick={handleWhatsAppShare}
-                  className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-[#25D366] hover:bg-[#1ebd59] shadow-lg shadow-emerald-500/20 transition-all active:scale-98"
+                  className="flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-[#25D366] hover:bg-[#1ebd59] shadow-md transition-all active:scale-98"
                 >
                   <MessageCircle className="w-4 h-4 fill-white" />
                   <span>WhatsApp શેર</span>
@@ -220,11 +220,11 @@ export default function ReceiptView() {
                     const baseUrl = (!isLocal && typeof window !== 'undefined' && window.location.origin)
                       ? window.location.origin
                       : 'https://unity-a-live-group.vercel.app';
-                    const link = `${baseUrl}/receipt/${encodeURIComponent(contribution.id || contribution.receiptNo)}`;
+                    const link = `${baseUrl}/admin/receipt/${encodeURIComponent(contribution.id || contribution.receiptNo)}`;
                     navigator.clipboard.writeText(link);
                     alert('✓ લિંક કૉપિ થઈ ગઈ છે! (Link copied to clipboard)');
                   }}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-amber-400/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold transition active:scale-98"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border border-emerald-400/40 bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-300 text-xs font-bold transition active:scale-98"
                 >
                   <span>🔗 લિંક કૉપિ કરો (Copy Link)</span>
                 </button>
@@ -232,9 +232,9 @@ export default function ReceiptView() {
                 <button
                   onClick={handleDeviceShare}
                   disabled={sharing}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold border border-white/15 transition active:scale-98"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/15 transition active:scale-98"
                 >
-                  <Share2 className="w-3.5 h-3.5 text-amber-400" />
+                  <Share2 className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{sharing ? 'શેર...' : 'Mobile Share'}</span>
                 </button>
               </div>
