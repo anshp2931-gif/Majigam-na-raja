@@ -146,8 +146,15 @@ export function getWhatsAppShareUrl(contribution) {
   lines.push('🙏 *આપના પવિત્ર સહયોગ બદલ હાર્દિક આભાર!*');
   lines.push('॥ *ગણપતિ બાપ્પા મોરિયા, મંગલ મૂર્તિ મોરિયા* ॥');
   lines.push('');
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://unity-a-live-group.vercel.app';
-  lines.push(`🌐 *પહોંચ લિંક / Digital Receipt:* ${baseUrl}/receipt/${contribution.id || receiptNo}`);
+  // Use public production domain if on localhost so shared WhatsApp links open properly on mobile devices
+  const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const baseUrl = (!isLocal && typeof window !== 'undefined' && window.location.origin)
+    ? window.location.origin
+    : 'https://unity-a-live-group.vercel.app';
+
+  const receiptKey = contribution.id || receiptNo;
+  lines.push('🌐 *પહોંચ લિંક / Digital Receipt:*');
+  lines.push(`${baseUrl}/receipt/${encodeURIComponent(receiptKey)}`);
 
   const text = encodeURIComponent(lines.join('\n'));
 

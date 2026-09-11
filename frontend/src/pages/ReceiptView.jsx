@@ -27,15 +27,48 @@ export default function ReceiptView() {
       try {
         setLoading(true);
         setError('');
-        const res = await fundsService.getContributionById(id);
-        if (res?.success && res?.data) {
-          setContribution(res.data);
+        const rawId = id ? decodeURIComponent(id).trim() : '';
+        const cleanId = rawId.toLowerCase();
+
+        let found = null;
+
+        // 1. Try direct single endpoint
+        try {
+          const res = await fundsService.getContributionById(rawId);
+          if (res?.success && res?.data) {
+            found = res.data;
+          }
+        } catch (singleErr) {
+          console.warn('Direct receipt endpoint returned error, trying contributions list fallback...', singleErr);
+        }
+
+        // 2. If direct fetch failed (e.g. route not deployed on production worker yet), fallback to getContributions()
+        if (!found) {
+          const listRes = await fundsService.getContributions();
+          const items = listRes?.data || [];
+
+          found = items.find((c) => {
+            const cId = (c.id || '').toLowerCase();
+            const cReceipt = (c.receiptNo || '').toLowerCase();
+            return (
+              cId === cleanId ||
+              cReceipt === cleanId ||
+              (cleanId && cId && cId.startsWith(cleanId)) ||
+              (cleanId && cReceipt && cReceipt.startsWith(cleanId)) ||
+              (cleanId && cId && cleanId.includes(cId)) ||
+              (cleanId && cReceipt && cleanId.includes(cReceipt))
+            );
+          });
+        }
+
+        if (found) {
+          setContribution(found);
         } else {
-          setError('Receipt not found or invalid ID.');
+          setError('પહોંચ મળી નથી / Receipt not found. કૃપા કરીને લિંક અથવા રસીદ નંબર ચકાસો.');
         }
       } catch (err) {
         console.error('Error loading receipt:', err);
-        setError('Could not find the requested donation receipt. Please check the link or ID.');
+        setError('દાન પહોંચ લોડ કરવામાં ક્ષતિ આવી છે. કૃપા કરીને ફરી પ્રયાસ કરો.');
       } finally {
         setLoading(false);
       }

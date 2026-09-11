@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { fundsService } from '../services/fundsService';
 import { generateDaanPDF, generateExpensesPDF, generateSummaryPDF } from '../utils/pdfGenerator';
 import Loading from '../components/Loading';
@@ -25,6 +26,7 @@ const fadeUp = {
 };
 
 export default function FundsPublic() {
+  const location = useLocation();
   const [summary, setSummary] = useState(null);
   const [contributions, setContributions] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -58,6 +60,23 @@ export default function FundsPublic() {
   useEffect(() => {
     fetchData();
   }, [cSearch, cMode, eSearch, eCat]);
+
+  // Auto open receipt if ?receipt=... is in the URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const receiptParam = params.get('receipt') || params.get('receiptId');
+    if (receiptParam && contributions.length > 0) {
+      const cleanParam = decodeURIComponent(receiptParam).trim().toLowerCase();
+      const match = contributions.find((c) => {
+        const cId = (c.id || '').toLowerCase();
+        const cReceipt = (c.receiptNo || '').toLowerCase();
+        return cId === cleanParam || cReceipt === cleanParam || (cId && cId.startsWith(cleanParam));
+      });
+      if (match) {
+        setActiveReceipt(match);
+      }
+    }
+  }, [location.search, contributions]);
 
   if (loading && !summary) {
     return <Loading />;
