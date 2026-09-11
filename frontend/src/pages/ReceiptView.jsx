@@ -212,18 +212,35 @@ export default function ReceiptView() {
                 </button>
               </div>
 
-              {/* Native Mobile Share */}
-              <button
-                onClick={handleDeviceShare}
-                disabled={sharing}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/10 transition active:scale-98"
-              >
-                <Share2 className="w-3.5 h-3.5 text-amber-400" />
-                <span>{sharing ? 'શેર થઈ રહ્યું છે...' : 'Share PDF File (મોબાઇલ શેર)'}</span>
-              </button>
+              {/* Secondary Options */}
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <button
+                  onClick={() => {
+                    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+                    const baseUrl = (!isLocal && typeof window !== 'undefined' && window.location.origin)
+                      ? window.location.origin
+                      : 'https://unity-a-live-group.vercel.app';
+                    const link = `${baseUrl}/receipt/${encodeURIComponent(contribution.id || contribution.receiptNo)}`;
+                    navigator.clipboard.writeText(link);
+                    alert('✓ લિંક કૉપિ થઈ ગઈ છે! (Link copied to clipboard)');
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-amber-400/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold transition active:scale-98"
+                >
+                  <span>🔗 લિંક કૉપિ કરો (Copy Link)</span>
+                </button>
 
-              <p className="text-[10px] text-center text-gray-400">
-                UNITY A LIVE GROUP • Official Digital Donation Receipt
+                <button
+                  onClick={handleDeviceShare}
+                  disabled={sharing}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold border border-white/15 transition active:scale-98"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{sharing ? 'શેર...' : 'Mobile Share'}</span>
+                </button>
+              </div>
+
+              <p className="text-[10px] text-center text-amber-200/60 pt-1">
+                🌺 UNITY A LIVE GROUP • Official Digital Donation Receipt
               </p>
             </div>
 
