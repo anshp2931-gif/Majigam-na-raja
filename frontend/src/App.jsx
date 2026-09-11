@@ -9,6 +9,7 @@ import AdminRegistrationDetails from './pages/AdminRegistrationDetails.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import FundsPublic from './pages/FundsPublic.jsx';
 import FundsAdmin from './pages/FundsAdmin.jsx';
+import ReceiptView from './pages/ReceiptView.jsx';
 
 export default function App() {
   return (
@@ -23,8 +24,10 @@ export default function App() {
         <Route path="/registration-success" element={<RegistrationSuccess />} />
         <Route path="/id/:uniqueId" element={<VerifyID />} />
 
-        {/* Funds - Public */}
+        {/* Funds & Receipts */}
         <Route path="/funds" element={<FundsPublic />} />
+        <Route path="/receipt/:id" element={<ReceiptView />} />
+        <Route path="/funds/receipt/:id" element={<ReceiptView />} />
 
         {/* Admin routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
