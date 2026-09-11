@@ -75,6 +75,28 @@ funds.get('/contributions', async (c) => {
   }
 });
 
+// GET /api/funds/contributions/:idOrNo (Public receipt view)
+funds.get('/contributions/:idOrNo', async (c) => {
+  try {
+    const idOrNo = c.req.param('idOrNo');
+    const collection = await getCollection(c.env, 'funds_contributions');
+
+    let record = await collection.findOne({ id: idOrNo });
+    if (!record) {
+      record = await collection.findOne({ receiptNo: idOrNo });
+    }
+
+    if (!record) {
+      return c.json({ success: false, message: 'Receipt not found' }, 404);
+    }
+
+    return c.json({ success: true, data: record });
+  } catch (err) {
+    console.error('Error fetching receipt:', err);
+    return c.json({ success: false, message: 'Error fetching receipt' }, 500);
+  }
+});
+
 // GET /api/funds/expenses
 funds.get('/expenses', async (c) => {
   try {
@@ -117,6 +139,8 @@ funds.post('/contributions', requireAdmin, async (c) => {
     const note = formData.get('note')?.trim() || '';
     const image = formData.get('image');
 
+    const phoneNumber = formData.get('phoneNumber')?.trim() || '';
+
     if (!contributorName || isNaN(amount) || amount <= 0 || !date || !paymentMode) {
       return c.json({ success: false, message: 'Invalid data provided' }, 400);
     }
@@ -130,9 +154,15 @@ funds.post('/contributions', requireAdmin, async (c) => {
 
     const now = new Date();
     const id = crypto.randomUUID();
+    const year = new Date(date).getFullYear() || now.getFullYear();
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const receiptNo = `UALG-${year}-${randomSuffix}`;
+
     const doc = {
       id,
+      receiptNo,
       contributorName,
+      phoneNumber,
       amount,
       date,
       paymentMode,
