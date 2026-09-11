@@ -11,6 +11,11 @@ export const fundsService = {
     return response.data;
   },
 
+  getContributionById: async (idOrNo) => {
+    const response = await api.get(`/api/funds/contributions/${encodeURIComponent(idOrNo)}`);
+    return response.data;
+  },
+
   getExpenses: async (params = {}) => {
     const response = await api.get('/api/funds/expenses', { params });
     return response.data;
