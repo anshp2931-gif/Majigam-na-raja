@@ -24,10 +24,12 @@ export default function App() {
         <Route path="/registration-success" element={<RegistrationSuccess />} />
         <Route path="/id/:uniqueId" element={<VerifyID />} />
 
-        {/* Funds & Receipts */}
+        {/* Public Funds */}
         <Route path="/funds" element={<FundsPublic />} />
+
+        {/* Receipt Views (Admin & Direct) */}
+        <Route path="/admin/receipt/:id" element={<ReceiptView />} />
         <Route path="/receipt/:id" element={<ReceiptView />} />
-        <Route path="/funds/receipt/:id" element={<ReceiptView />} />
 
         {/* Admin routes */}
         <Route path="/admin/login" element={<AdminLogin />} />

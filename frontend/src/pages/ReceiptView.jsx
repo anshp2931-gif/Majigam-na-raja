@@ -135,11 +135,11 @@ export default function ReceiptView() {
         {/* Navigation Bar */}
         <div className="w-full flex items-center justify-between mb-4">
           <Link
-            to="/funds"
+            to="/admin/funds"
             className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-amber-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg border border-white/10"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Funds / ફંડ યાદી</span>
+            <span>Admin Funds / ફંડ સંચાલન</span>
           </Link>
 
           <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">

@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import { fundsService } from '../services/fundsService';
 import { generateDaanPDF, generateExpensesPDF, generateSummaryPDF } from '../utils/pdfGenerator';
 import Loading from '../components/Loading';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import ReceiptModal from '../components/ReceiptModal';
-import { Download, IndianRupee, PieChart, Users, TrendingUp, TrendingDown, Eye, Wallet, ShieldCheck, Sparkles, ChevronRight, Activity, FileText } from 'lucide-react';
+import { Download, IndianRupee, PieChart, Users, TrendingUp, TrendingDown, Eye, Wallet, ShieldCheck, Sparkles, ChevronRight, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const formatMoney = (amount) => `₹${Number(amount).toLocaleString('en-IN')}`;
@@ -26,12 +24,10 @@ const fadeUp = {
 };
 
 export default function FundsPublic() {
-  const location = useLocation();
   const [summary, setSummary] = useState(null);
   const [contributions, setContributions] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeReceipt, setActiveReceipt] = useState(null);
 
   // Filters
   const [cSearch, setCSearch] = useState('');
@@ -60,23 +56,6 @@ export default function FundsPublic() {
   useEffect(() => {
     fetchData();
   }, [cSearch, cMode, eSearch, eCat]);
-
-  // Auto open receipt if ?receipt=... is in the URL
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const receiptParam = params.get('receipt') || params.get('receiptId');
-    if (receiptParam && contributions.length > 0) {
-      const cleanParam = decodeURIComponent(receiptParam).trim().toLowerCase();
-      const match = contributions.find((c) => {
-        const cId = (c.id || '').toLowerCase();
-        const cReceipt = (c.receiptNo || '').toLowerCase();
-        return cId === cleanParam || cReceipt === cleanParam || (cId && cId.startsWith(cleanParam));
-      });
-      if (match) {
-        setActiveReceipt(match);
-      }
-    }
-  }, [location.search, contributions]);
 
   if (loading && !summary) {
     return <Loading />;
@@ -333,22 +312,13 @@ export default function FundsPublic() {
                           </div>
                           <div className="text-right flex flex-col items-end">
                             <span className="font-black text-emerald-400 text-xl sm:text-2xl drop-shadow-[0_0_8px_rgba(16,185,129,0.3)] block">{formatMoney(c.amount)}</span>
-                            <div className="mt-2 flex items-center gap-1.5 flex-wrap justify-end">
-                              <button
-                                onClick={() => setActiveReceipt(c)}
-                                className="inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-white transition-colors bg-amber-500/10 hover:bg-amber-500/30 border border-amber-500/30 px-2.5 py-1 rounded-lg"
-                                title="View & Download Official Receipt (પહોંચ)"
-                              >
-                                <span>🧾</span>
-                                <span className="hidden sm:inline">પહોંચ / Receipt</span>
-                                <span className="sm:hidden">પહોંચ</span>
-                              </button>
-                              {c.imageUrl && (
+                            {c.imageUrl && (
+                              <div className="mt-2 flex items-center justify-end">
                                 <a href={c.imageUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-blue-400 hover:text-white transition-colors bg-blue-500/10 hover:bg-blue-500/30 border border-blue-500/20 px-2.5 py-1 rounded-lg">
                                   <Eye className="w-3.5 h-3.5"/> Proof
                                 </a>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         </motion.div>
                       ))}
@@ -473,14 +443,6 @@ export default function FundsPublic() {
       `}</style>
       
       <Footer />
-
-      {/* Donation Receipt Modal */}
-      {activeReceipt && (
-        <ReceiptModal
-          contribution={activeReceipt}
-          onClose={() => setActiveReceipt(null)}
-        />
-      )}
     </div>
   );
 }
