@@ -1,14 +1,26 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { getCollection } from './src/services/mongodb.js';
 import { uploadToCloudinary } from './src/services/cloudinary.js';
 import { generateUniqueId } from './src/services/idGenerator.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const envPath = path.join(__dirname, '.env');
+
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  process.loadEnvFile(envPath);
+}
+
 const mockEnv = {
-  MONGODB_URI: "mongodb+srv://manan:manan0112@cluster0.gndr5q0.mongodb.net/?retryWrites=true&w=majority",
-  MONGODB_DATABASE: "unity_a_live_group",
-  MONGODB_COLLECTION: "registrations",
-  CLOUDINARY_CLOUD_NAME: "pplcot0h",
-  CLOUDINARY_API_KEY: "953761345214678",
-  CLOUDINARY_API_SECRET: "tG-Kv7U9n8fPK-juJZXOf9PDL20",
+  MONGODB_URI: process.env.MONGODB_URI,
+  MONGODB_DATABASE: process.env.MONGODB_DATABASE || "majigam_na_raja",
+  MONGODB_COLLECTION: process.env.MONGODB_COLLECTION || "registrations",
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+  ID_PREFIX: process.env.ID_PREFIX || "MNR",
 };
 
 async function testRegistration() {
@@ -17,11 +29,10 @@ async function testRegistration() {
   console.log("✓ Connected to MongoDB");
 
   console.log("2. Generating unique ID...");
-  const uniqueId = await generateUniqueId(collection);
+  const uniqueId = await generateUniqueId(collection, 10, mockEnv.ID_PREFIX);
   console.log("✓ Unique ID generated:", uniqueId);
 
   console.log("3. Testing Cloudinary upload with dummy 1x1 PNG...");
-  // Create a minimal 1x1 transparent PNG blob
   const pngBuffer = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
     'base64'
@@ -29,7 +40,7 @@ async function testRegistration() {
   const file = new File([pngBuffer], 'test.png', { type: 'image/png' });
 
   const cloudinaryRes = await uploadToCloudinary(file, mockEnv);
-  console.log("✓ Cloudinary Upload Successful:", cloudinaryRes);
+  console.log("✓ Cloudinary Upload Successful:", cloudinaryRes.secure_url);
 
   console.log("4. Inserting test record into MongoDB...");
   const doc = {
@@ -38,7 +49,7 @@ async function testRegistration() {
     age: 25,
     mobileNumber: "9876543210",
     bloodGroup: "B+",
-    city: "Ahmedabad",
+    city: "Majigam",
     photoUrl: cloudinaryRes.secure_url,
     photoPublicId: cloudinaryRes.public_id,
     createdAt: new Date(),

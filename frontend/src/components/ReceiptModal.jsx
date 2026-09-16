@@ -63,7 +63,7 @@ export default function ReceiptModal({ contribution, onClose }) {
     const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     const baseUrl = (!isLocal && typeof window !== 'undefined' && window.location.origin)
       ? window.location.origin
-      : 'https://unity-a-live-group.vercel.app';
+      : (typeof window !== 'undefined' ? window.location.origin : '');
     const link = `${baseUrl}/receipt/${encodeURIComponent(contribution.id || receiptNo)}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
@@ -84,7 +84,7 @@ export default function ReceiptModal({ contribution, onClose }) {
                 <span className="text-amber-400 text-xs">•</span>
                 <span className="text-amber-200">Donation Receipt</span>
               </h3>
-              <p className="text-[11px] text-emerald-300 font-mono">UNITY A LIVE GROUP • {receiptNo}</p>
+              <p className="text-[11px] text-emerald-300 font-mono">મજીગામ ના રાજા • {receiptNo}</p>
             </div>
           </div>
           <button

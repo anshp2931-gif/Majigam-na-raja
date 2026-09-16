@@ -1,4 +1,4 @@
-// frontend/src/services/api.js
+﻿// frontend/src/services/api.js
 // Centralized Axios API service
 
 import axios from 'axios';
@@ -16,19 +16,32 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // If admin page, redirect to login
-      if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
-        window.location.href = '/admin/login';
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      const isProtectedFundsPage =
+        window.location.pathname.startsWith('/admin') ||
+        window.location.pathname.startsWith('/receipt') ||
+        window.location.pathname === '/funds';
+
+      if (isProtectedFundsPage && window.location.pathname !== '/admin/login') {
+        window.location.href = `/admin/login?redirect=${encodeURIComponent(currentPath)}`;
       }
     }
     return Promise.reject(error);
   }
 );
 
-// ─── Public Registration ──────────────────────────────────────────────────────
+// ─── Public Members Directory ────────────────────────────────────────────────
 
 /**
- * Registers a new member. Sends FormData (with photo file).
+ * Fetches public members directory (read-only for normal users).
+ */
+export async function getPublicMembers(params = {}) {
+  const response = await api.get('/api/members', { params });
+  return response.data;
+}
+
+/**
+ * Registers a new member (Admin or legacy endpoint).
  */
 export async function registerMember(formData) {
   const response = await api.post('/api/register', formData, {
@@ -78,6 +91,20 @@ export async function getRegistrations(params = {}) {
 
 export async function getRegistrationByUniqueId(uniqueId) {
   const response = await api.get(`/api/admin/registrations/${uniqueId}`);
+  return response.data;
+}
+
+export async function adminCreateMember(formData) {
+  const response = await api.post('/api/admin/registrations', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+}
+
+export async function adminUpdateMember(uniqueId, formData) {
+  const response = await api.put(`/api/admin/registrations/${uniqueId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
   return response.data;
 }
 

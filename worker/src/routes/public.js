@@ -9,7 +9,7 @@ const publicRoutes = new Hono();
 publicRoutes.get('/:uniqueId', async (c) => {
   const uniqueId = c.req.param('uniqueId');
 
-  if (!uniqueId || !/^UALG-\d{4}-[A-Z0-9]{6}$/.test(uniqueId)) {
+  if (!uniqueId || !/^[A-Z0-9_-]{2,10}-\d{4}-[A-Z0-9]{6}$/i.test(uniqueId)) {
     return c.json({
       success: false,
       message: 'Invalid membership ID format.',
@@ -29,7 +29,7 @@ publicRoutes.get('/:uniqueId', async (c) => {
           uniqueId: 1,
           fullName: 1,
           age: 1,
-          bloodGroup: 1,
+          position: 1,
           city: 1,
           photoUrl: 1,
           createdAt: 1,

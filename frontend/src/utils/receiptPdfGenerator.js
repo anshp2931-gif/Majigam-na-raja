@@ -83,7 +83,7 @@ export async function shareReceiptViaDevice(element, contribution) {
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({
         title: `Donation Receipt - ${contribution.contributorName}`,
-        text: `UNITY A LIVE GROUP - Ganesh Chaturthi 2026 Donation Receipt (₹${Number(contribution.amount).toLocaleString('en-IN')})`,
+        text: `મજીગામ ના રાજા - Ganesh Mahotsav 2026 Donation Receipt (₹${Number(contribution.amount).toLocaleString('en-IN')})`,
         files: [file],
       });
       return { success: true };
@@ -107,7 +107,7 @@ export async function shareReceiptViaDevice(element, contribution) {
  * Builds pre-formatted WhatsApp share link
  */
 export function getWhatsAppShareUrl(contribution) {
-  const receiptNo = contribution.receiptNo || `UALG-REC-${contribution.id?.slice(0, 6)?.toUpperCase() || 'NEW'}`;
+  const receiptNo = contribution.receiptNo || `MNR-REC-${contribution.id?.slice(0, 6)?.toUpperCase() || 'NEW'}`;
   const amountFormatted = `₹${Number(contribution.amount).toLocaleString('en-IN')}`;
   const dateFormatted = new Date(contribution.date).toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -124,7 +124,7 @@ export function getWhatsAppShareUrl(contribution) {
 
   const lines = [
     '🌸 *॥ શ્રી ગણેશાય નમઃ ॥* 🌸',
-    '*UNITY A LIVE GROUP - GANPATI MAHOTSAV 2026*',
+    '*મજીગામ ના રાજા - GANPATI MAHOTSAV 2026*',
     '📜 *દાન પહોંચ / DONATION RECEIPT*',
     '────────────────────────',
     `🧾 *પહોંચ નં. (Receipt No):* ${receiptNo}`,
@@ -150,7 +150,7 @@ export function getWhatsAppShareUrl(contribution) {
   const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
   const baseUrl = (!isLocal && typeof window !== 'undefined' && window.location.origin)
     ? window.location.origin
-    : 'https://unity-a-live-group.vercel.app';
+    : (typeof window !== 'undefined' ? window.location.origin : '');
 
   const receiptKey = contribution.id || receiptNo;
   lines.push('🌐 *પહોંચ લિંક / Digital Receipt:*');

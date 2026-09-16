@@ -3,17 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
-import { Shield, User, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Shield, User, Lock, AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { ButtonLoading } from '../components/Loading.jsx';
 import { adminLoginSchema } from '../utils/validation.js';
 import { adminLogin, getAdminMe } from '../services/api.js';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const redirectTarget = new URLSearchParams(location.search).get('redirect') || '/admin/dashboard';
 
   const {
     register,
@@ -24,16 +26,16 @@ export default function AdminLogin() {
   // Redirect if already logged in
   useEffect(() => {
     getAdminMe()
-      .then(() => navigate('/admin/dashboard', { replace: true }))
+      .then(() => navigate(redirectTarget, { replace: true }))
       .catch(() => {}); // Not logged in — stay on login page
-  }, [navigate]);
+  }, [navigate, redirectTarget]);
 
   const onSubmit = async ({ username, password }) => {
     setSubmitting(true);
     setServerError('');
     try {
       await adminLogin(username, password);
-      navigate('/admin/dashboard', { replace: true });
+      navigate(redirectTarget, { replace: true });
     } catch (err) {
       const status = err.response?.status;
       if (status === 429) {
@@ -55,11 +57,12 @@ export default function AdminLogin() {
         <div className="text-center mb-8">
           <img 
             src="/logo.png" 
-            alt="Unity A Live Group Logo" 
+            alt="મજીગામ ના રાજા Logo" 
             className="w-20 h-20 rounded-full object-cover border-4 border-ualg-gold shadow-2xl mx-auto mb-4 bg-white" 
           />
-          <h1 className="text-white font-black text-xl tracking-wide">UNITY A LIVE GROUP</h1>
-          <p className="text-blue-300 text-sm mt-1 tracking-widest uppercase">Admin Portal</p>
+          <h1 className="text-white font-black text-2xl tracking-wide">મજીગામ ના રાજા</h1>
+          <p className="text-ualg-gold font-bold text-xs tracking-widest uppercase mt-0.5">MAJIGAM NA RAJA</p>
+          <p className="text-blue-300 text-xs mt-1 tracking-widest uppercase">Admin Portal</p>
         </div>
 
         {/* Card */}
@@ -132,11 +135,19 @@ export default function AdminLogin() {
             >
               {submitting ? <ButtonLoading text="Signing in..." /> : 'Sign In'}
             </button>
+
+            <Link
+              to="/"
+              className="w-full mt-4 flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition duration-300"
+            >
+              <ArrowRight className="w-4 h-4" />
+              Back to Home
+            </Link>
           </form>
         </div>
 
         <p className="text-center text-blue-300/50 text-xs mt-6">
-          UNITY A LIVE GROUP — Secure Admin Access
+          મજીગામ ના રાજા (MAJIGAM NA RAJA) — Secure Admin Access
         </p>
       </div>
     </div>

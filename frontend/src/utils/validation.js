@@ -25,18 +25,21 @@ export const registrationSchema = z.object({
     .min(1, 'Mobile number is required.')
     .regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit Indian mobile number (starts with 6-9).'),
 
-  bloodGroup: z
+  dateOfBirth: z
     .string()
-    .min(1, 'Blood group is required.')
-    .refine((val) => BLOOD_GROUPS.includes(val), 'Please select a valid blood group.'),
+    .min(1, 'Date of birth is required.')
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Enter a valid date of birth.'),
 
-  city: z
+  gender: z
     .string()
-    .min(1, 'City is required.')
-    .min(2, 'City must be at least 2 characters.')
-    .max(100, 'City name is too long.')
-    .trim()
-    .regex(/^[A-Za-z\s.\-']+$/, 'City name can only contain letters, spaces, and hyphens.'),
+    .min(1, 'Gender is required.')
+    .refine((val) => ['Male', 'Female', 'Other'].includes(val), 'Select a valid gender.'),
+
+  email: z
+    .string()
+    .min(1, 'Email address is required.')
+    .email('Enter a valid email address.')
+    .trim(),
 });
 
 export const adminLoginSchema = z.object({

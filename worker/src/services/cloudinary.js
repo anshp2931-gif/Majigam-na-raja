@@ -28,23 +28,29 @@ async function buildSignature(params, apiSecret) {
  * Returns { secure_url, public_id }.
  */
 export async function uploadToCloudinary(file, env) {
-  return _upload(file, env, 'unity-a-live-group/members', 'image');
+  const folder = env.CLOUDINARY_MEMBER_FOLDER || `${env.PROJECT_SLUG || 'majigam-na-raja'}/members`;
+  return _upload(file, env, folder, 'image');
 }
 
 /**
- * Uploads an image or video to Cloudinary for the Ganpati gallery.
+ * Uploads an image or video to Cloudinary for the media gallery.
  * Automatically determines if file is image or video.
  * Returns { secure_url, public_id, asset_id, resource_type }.
  */
 export async function uploadToCloudinaryGallery(file, env, isVideo = false) {
   const resourceType = isVideo ? 'video' : 'image';
-  return _upload(file, env, 'unity-a-live-group/ganpati-gallery', resourceType);
+  const folder = env.CLOUDINARY_GALLERY_FOLDER || `${env.PROJECT_SLUG || 'majigam-na-raja'}/gallery`;
+  return _upload(file, env, folder, resourceType);
 }
 
 async function _upload(file, env, folder, resourceType = 'image') {
-  const cloudName = env.CLOUDINARY_CLOUD_NAME || 'pplcot0h';
-  const apiKey = env.CLOUDINARY_API_KEY || '953761345214678';
-  const apiSecret = env.CLOUDINARY_API_SECRET || 'tG-Kv7U9n8fPK-juJZXOf9PDL20';
+  const cloudName = env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = env.CLOUDINARY_API_KEY;
+  const apiSecret = env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error('Cloudinary credentials missing in environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET).');
+  }
 
   const timestamp = Math.floor(Date.now() / 1000).toString();
 
@@ -89,9 +95,13 @@ async function _upload(file, env, folder, resourceType = 'image') {
  * Deletes an image or video from Cloudinary by public_id.
  */
 export async function deleteFromCloudinary(publicId, env, resourceType = 'image') {
-  const cloudName = env.CLOUDINARY_CLOUD_NAME || 'pplcot0h';
-  const apiKey = env.CLOUDINARY_API_KEY || '953761345214678';
-  const apiSecret = env.CLOUDINARY_API_SECRET || 'tG-Kv7U9n8fPK-juJZXOf9PDL20';
+  const cloudName = env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = env.CLOUDINARY_API_KEY;
+  const apiSecret = env.CLOUDINARY_API_SECRET;
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error('Cloudinary credentials missing in environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET).');
+  }
 
   const timestamp = Math.floor(Date.now() / 1000).toString();
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fundsService } from '../services/fundsService';
 import { generateDaanPDF, generateExpensesPDF, generateSummaryPDF } from '../utils/pdfGenerator';
 import Loading from '../components/Loading';
@@ -9,6 +9,7 @@ import { Download, Plus, Trash2, X, PieChart, Users, ArrowLeft, FileText } from 
 const formatMoney = (amount) => `₹${Number(amount).toLocaleString('en-IN')}`;
 
 export default function FundsAdmin() {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [contributions, setContributions] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -78,8 +79,8 @@ export default function FundsAdmin() {
               </Link>
               <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-full border-2 border-ualg-gold bg-white" />
               <div>
-                <p className="text-white font-black text-sm leading-none">UNITY A LIVE GROUP</p>
-                <p className="text-blue-300 text-xs">Admin Portal</p>
+                <p className="text-white font-black text-sm leading-none">મજીગામ ના રાજા</p>
+                <p className="text-ualg-gold text-[10px] font-bold">Admin Portal</p>
               </div>
             </div>
           </div>
@@ -111,8 +112,8 @@ export default function FundsAdmin() {
             </Link>
             <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-full border-2 border-ualg-gold bg-white flex-shrink-0" />
             <div className="min-w-0">
-              <p className="text-white font-black text-sm leading-none truncate">UNITY A LIVE GROUP</p>
-              <p className="text-blue-300 text-xs">Fund Management</p>
+              <p className="text-white font-black text-sm leading-none truncate">મજીગામ ના રાજા</p>
+              <p className="text-ualg-gold text-[10px] font-bold truncate">MAJIGAM NA RAJA • Fund Management</p>
             </div>
           </div>
           <Link to="/admin/dashboard" className="text-xs text-blue-300 hover:text-white transition-colors flex-shrink-0">

@@ -22,7 +22,7 @@ export async function downloadGalleryMedia(mediaUrl, filename) {
 
     const anchor = document.createElement('a');
     anchor.href = objectUrl;
-    anchor.download = filename || 'unity-a-live-group-ganpati-celebration';
+    anchor.download = filename || 'majigam-na-raja-ganpati-celebration';
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
@@ -45,5 +45,5 @@ export function getDownloadFilename(item, index) {
   const isVideo = item.mediaType === 'video' || item.imageUrl?.includes('/video/');
   const defaultExt = isVideo ? 'mp4' : 'jpg';
   const ext = item.originalFilename?.split('.').pop() || defaultExt;
-  return `unity-a-live-group-ganpati-${num}.${ext}`;
+  return `majigam-na-raja-ganpati-${num}.${ext}`;
 }

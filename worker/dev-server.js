@@ -2,8 +2,52 @@
 // Runs the Hono backend API directly on Node.js using @hono/node-server
 // Includes local D1 mock store for seamless local testing without Miniflare.
 
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { serve } from '@hono/node-server';
+import { Hono } from 'hono';
 import app from './src/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Auto-load .env or .dev.vars for local development
+const candidateEnvFiles = [
+  path.join(__dirname, '.env'),
+  path.join(__dirname, '.dev.vars'),
+  path.join(__dirname, '..', '.env'),
+];
+
+for (const envFile of candidateEnvFiles) {
+  if (fs.existsSync(envFile)) {
+    try {
+      if (typeof process.loadEnvFile === 'function') {
+        process.loadEnvFile(envFile);
+      } else {
+        // Fallback parser if loadEnvFile is not present
+        const content = fs.readFileSync(envFile, 'utf8');
+        content.split(/\r?\n/).forEach((line) => {
+          const trimmed = line.trim();
+          if (trimmed && !trimmed.startsWith('#')) {
+            const eqIdx = trimmed.indexOf('=');
+            if (eqIdx > 0) {
+              const key = trimmed.slice(0, eqIdx).trim();
+              const val = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, '');
+              if (!process.env[key]) {
+                process.env[key] = val;
+              }
+            }
+          }
+        });
+      }
+      console.log(`Loaded environment from: ${envFile}`);
+      break;
+    } catch (err) {
+      console.warn(`Could not load ${envFile}:`, err.message);
+    }
+  }
+}
 
 // In-memory / mock D1 store for local development
 const mockGalleryStore = [];
@@ -69,21 +113,20 @@ const mockD1 = {
 
 // Environment variables
 const env = {
-  MONGODB_URI: process.env.MONGODB_URI || "mongodb+srv://manan:manan0112@cluster0.gndr5q0.mongodb.net/?retryWrites=true&w=majority",
-  MONGODB_DATABASE: "unity_a_live_group",
-  MONGODB_COLLECTION: "registrations",
-  CLOUDINARY_CLOUD_NAME: "pplcot0h",
-  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || "953761345214678",
-  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || "tG-Kv7U9n8fPK-juJZXOf9PDL20",
-  ADMIN_USERNAME: process.env.ADMIN_USERNAME || "ganpatibapamorya",
-  ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH || "03f48f6d87ab3a32b242e407b840c21c2adc98b5c9e6bbc6ec5dff8da78ec00e",
-  SESSION_SECRET: process.env.SESSION_SECRET || "ualg_super_secret_session_key_2026_unity_a_live_group",
-  PUBLIC_BASE_URL: "http://localhost:5173",
-  ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:4173,https://unity-a-live-group.vercel.app",
+  MONGODB_URI: process.env.MONGODB_URI || "",
+  MONGODB_DATABASE: process.env.MONGODB_DATABASE || "majigam_na_raja",
+  MONGODB_COLLECTION: process.env.MONGODB_COLLECTION || "registrations",
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || "",
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || "",
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || "",
+  ADMIN_USERNAME: process.env.ADMIN_USERNAME || "admin",
+  ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH || "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",
+  SESSION_SECRET: process.env.SESSION_SECRET || "mnr_secret_session_key_2026_majigam_na_raja",
+  PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL || "http://localhost:5173",
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || "http://localhost:5173,http://localhost:4173",
+  ID_PREFIX: process.env.ID_PREFIX || "MNR",
   DB: mockD1,
 };
-
-import { Hono } from 'hono';
 
 const wrapper = new Hono();
 
@@ -96,8 +139,8 @@ wrapper.use('*', async (c, next) => {
 
 wrapper.route('/', app);
 
-const port = 8787;
-console.log(`🚀 UNITY A LIVE GROUP API Server running at http://localhost:${port}`);
+const port = Number(process.env.PORT) || 8787;
+console.log(`🚀 MAJIGAM NA RAJA API Server running at http://localhost:${port}`);
 
 serve({
   fetch: wrapper.fetch,

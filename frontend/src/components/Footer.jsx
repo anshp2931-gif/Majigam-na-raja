@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-import { Instagram } from 'lucide-react';
+import { Instagram, Facebook, Youtube } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -8,31 +7,55 @@ export default function Footer() {
         
         <img 
           src="/logo.png" 
-          alt="Unity A Live Group Logo" 
-          className="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-ualg-gold mb-6" 
+          alt="મજીગામ ના રાજા Logo" 
+          className="w-16 h-16 rounded-full object-cover shadow-lg border-2 border-ualg-gold mb-4 bg-white" 
         />
         
-        <h3 className="text-xl font-black text-white mb-2 tracking-wide">UNITY A LIVE GROUP</h3>
-        <p className="text-gray-400 text-sm mb-8 text-center max-w-sm">
-          Celebrating devotion, togetherness, and unforgettable moments of Ganesh Chaturthi.
+        <h3 className="text-xl font-black text-white mb-1 tracking-wide">મજીગામ ના રાજા</h3>
+        <p className="text-ualg-gold text-xs font-bold tracking-widest uppercase mb-2">MAJIGAM NA RAJA</p>
+        <p className="text-gray-400 text-sm mb-6 text-center max-w-sm">
+          Celebrating devotion, togetherness, and unforgettable moments of Ganesh Mahotsav.
         </p>
 
-        <a 
-          href="https://www.instagram.com/unity_a_live_group_/" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all active:scale-95 mb-10"
-        >
-          <Instagram className="w-5 h-5" />
-          Follow on Instagram
-        </a>
+        {/* Social Media Links */}
+        <div className="flex flex-wrap justify-center gap-3 mb-6">
+          <a
+            href="https://www.instagram.com/majigam_na_raja"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium text-sm transition-opacity duration-200 hover:opacity-80"
+            style={{ background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}
+          >
+            <Instagram className="w-4 h-4" />
+            <span>Follow us on Instagram</span>
+          </a>
+          <a
+            href="https://www.facebook.com/share/1J8GLuKahc/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium text-sm bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+          >
+            <Facebook className="w-4 h-4" />
+            <span>Follow us on Facebook</span>
+          </a>
+          <a
+            href="https://youtube.com/@majigam_na_raja"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium text-sm bg-red-600 hover:bg-red-700 transition-colors duration-200"
+          >
+            <Youtube className="w-5 h-5" />
+            <span className="text-sm font-medium">Subscribe on YouTube</span>
+          </a>
+        </div>
 
-        <div className="w-full h-px bg-white/10 mb-8"></div>
+        <div className="w-full h-px bg-white/10 mb-6"></div>
 
         <div className="text-center text-xs text-gray-500 font-medium">
-          <p>© {new Date().getFullYear()} UNITY A LIVE GROUP. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} મજીગામ ના રાજા (MAJIGAM NA RAJA). All rights reserved.</p>
         </div>
       </div>
     </footer>
   );
 }
+

@@ -1,15 +1,18 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Gallery from './gallery/pages/Gallery.jsx';
+import Members from './pages/Members.jsx';
 import Registration from './pages/Registration.jsx';
 import RegistrationSuccess from './pages/RegistrationSuccess.jsx';
 import VerifyID from './pages/VerifyID.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import AdminRegistrationDetails from './pages/AdminRegistrationDetails.jsx';
+import AllRegistrations from './pages/AllRegistrations.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
-import FundsPublic from './pages/FundsPublic.jsx';
 import FundsAdmin from './pages/FundsAdmin.jsx';
 import ReceiptView from './pages/ReceiptView.jsx';
+import MandalLocation from './pages/MandalLocation.jsx';
+import About from './pages/About.jsx';
 
 export default function App() {
   return (
@@ -18,18 +21,41 @@ export default function App() {
         {/* Public Gallery (Primary Landing Page) */}
         <Route path="/" element={<Gallery />} />
 
-        {/* Member Registration */}
-        <Route path="/register" element={<Registration />} />
-        <Route path="/registration" element={<Navigate to="/register" replace />} />
-        <Route path="/registration-success" element={<RegistrationSuccess />} />
+        {/* Public Members Directory (Read-only for normal users) */}
+        <Route path="/members" element={<Members />} />
+
+        {/* Legacy Registration URLs redirect to Members */}
+        <Route path="/register" element={<Navigate to="/members" replace />} />
+        <Route path="/registration" element={<Navigate to="/members" replace />} />
+        <Route path="/registration-success" element={<Navigate to="/members" replace />} />
         <Route path="/id/:uniqueId" element={<VerifyID />} />
 
-        {/* Public Funds */}
-        <Route path="/funds" element={<FundsPublic />} />
+        {/* Public funds link redirects to admin login */}
+        <Route path="/funds" element={<Navigate to="/admin/login?redirect=%2Fadmin%2Ffunds" replace />} />
 
-        {/* Receipt Views (Admin & Direct) */}
-        <Route path="/admin/receipt/:id" element={<ReceiptView />} />
-        <Route path="/receipt/:id" element={<ReceiptView />} />
+        {/* Mandal Location */}
+        <Route path="/location" element={<MandalLocation />} />
+
+        {/* About */}
+        <Route path="/about" element={<About />} />
+
+        {/* Receipt Views */}
+        <Route
+          path="/admin/receipt/:id"
+          element={
+            <ProtectedRoute>
+              <ReceiptView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/receipt/:id"
+          element={
+            <ProtectedRoute>
+              <ReceiptView />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Admin routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
@@ -46,6 +72,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AdminRegistrationDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/all-registrations"
+          element={
+            <ProtectedRoute>
+              <AllRegistrations />
             </ProtectedRoute>
           }
         />

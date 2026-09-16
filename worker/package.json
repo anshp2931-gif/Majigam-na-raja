@@ -1,14 +1,14 @@
 {
-  "name": "unity-a-live-group-worker",
+  "name": "majigam-na-raja-worker",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Backend API for UNITY A LIVE GROUP Digital ID and Ganpati Gallery System",
+  "description": "Backend API for MAJIGAM NA RAJA Digital ID and Management System",
   "scripts": {
     "dev": "node dev-server.js",
     "deploy": "wrangler deploy",
-    "migrate:local": "wrangler d1 migrations apply unity-a-live-group-db --local",
-    "migrate:remote": "wrangler d1 migrations apply unity-a-live-group-db --remote"
+    "migrate:local": "wrangler d1 migrations apply majigam-na-raja-db --local",
+    "migrate:remote": "wrangler d1 migrations apply majigam-na-raja-db --remote"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

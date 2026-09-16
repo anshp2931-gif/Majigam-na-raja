@@ -1,6 +1,6 @@
 // frontend/src/pages/ReceiptView.jsx
 // Dedicated route page for viewing, verifying, downloading, and sharing donation receipts.
-// URL: /receipt/:id and /funds/receipt/:id
+// URL: /receipt/:id and /admin/receipt/:id
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
@@ -156,10 +156,10 @@ export default function ReceiptView() {
             <h2 className="text-xl font-bold text-white mb-2">પહોંચ મળી નથી / Receipt Not Found</h2>
             <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">{error}</p>
             <Link
-              to="/funds"
+              to="/admin/funds"
               className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-5 py-2.5 rounded-xl transition-all shadow-lg"
             >
-              <ArrowLeft className="w-4 h-4" /> ફંડ પેજ પર જાઓ / Go to Funds
+              <ArrowLeft className="w-4 h-4" /> એડમિન ફંડ પેજ પર જાઓ / Go to Admin Funds
             </Link>
           </div>
         ) : (
@@ -219,7 +219,7 @@ export default function ReceiptView() {
                     const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
                     const baseUrl = (!isLocal && typeof window !== 'undefined' && window.location.origin)
                       ? window.location.origin
-                      : 'https://unity-a-live-group.vercel.app';
+                      : (typeof window !== 'undefined' ? window.location.origin : '');
                     const link = `${baseUrl}/admin/receipt/${encodeURIComponent(contribution.id || contribution.receiptNo)}`;
                     navigator.clipboard.writeText(link);
                     alert('✓ લિંક કૉપિ થઈ ગઈ છે! (Link copied to clipboard)');
@@ -240,7 +240,7 @@ export default function ReceiptView() {
               </div>
 
               <p className="text-[10px] text-center text-amber-200/60 pt-1">
-                🌺 UNITY A LIVE GROUP • Official Digital Donation Receipt
+                🌺 મજીગામ ના રાજા (MAJIGAM NA RAJA) • Official Digital Donation Receipt
               </p>
             </div>
 

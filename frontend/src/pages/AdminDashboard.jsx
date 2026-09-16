@@ -6,7 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Users, TrendingUp, Calendar, Search, Filter, ChevronLeft, ChevronRight,
   LogOut, Eye, Trash2, Shield, RefreshCw, AlertCircle, Image as ImageIcon,
-  Plus, Download, CheckCircle, ExternalLink
+  Plus, Download, CheckCircle, ExternalLink, Pencil
 } from 'lucide-react';
 import { PageLoading, ButtonLoading } from '../components/Loading.jsx';
 import {
@@ -17,6 +17,7 @@ import { fetchGallery, deleteGalleryImage } from '../gallery/services/galleryApi
 import GalleryUploadModal from '../gallery/components/GalleryUploadModal.jsx';
 import { downloadGalleryImage, getDownloadFilename } from '../gallery/utils/downloadImage.js';
 import { formatFileSize } from '../gallery/utils/imageValidation.js';
+import AdminMemberModal from '../components/AdminMemberModal.jsx';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -43,6 +44,11 @@ export default function AdminDashboard() {
   const [deleting, setDeleting] = useState(false);
 
   const [error, setError] = useState('');
+  // Admin Member Modal (Add / Edit) state
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [successToast, setSuccessToast] = useState('');
+
 
   // ── Gallery Management State ──────────────────────────────────────────────
   const [galleryImages, setGalleryImages] = useState([]);
@@ -173,12 +179,12 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-3">
             <img 
               src="/logo.png" 
-              alt="Unity A Live Group Logo" 
-              className="w-8 h-8 rounded-full object-cover border-2 border-ualg-gold flex-shrink-0" 
+              alt="મજીગામ ના રાજા Logo" 
+              className="w-9 h-9 rounded-full object-cover border-2 border-ualg-gold flex-shrink-0 bg-white" 
             />
             <div>
-              <p className="text-white font-black text-sm leading-none">UNITY A LIVE GROUP</p>
-              <p className="text-blue-300 text-xs">Admin Management Portal</p>
+              <p className="text-white font-black text-sm leading-none">મજીગામ ના રાજા</p>
+              <p className="text-ualg-gold text-[10px] font-bold tracking-wider uppercase">MAJIGAM NA RAJA • Admin Portal</p>
             </div>
           </div>
 
@@ -285,34 +291,19 @@ export default function AdminDashboard() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search by name, ID or mobile..."
+                    placeholder="Search by name, ID, mobile or email..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     className="input-field pl-9 text-sm"
                   />
                 </div>
 
-                {/* Blood Group */}
-                <div className="relative">
-                  <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <select
-                    value={bloodGroup}
-                    onChange={(e) => { setBloodGroup(e.target.value); setPage(1); }}
-                    className="input-field pl-9 text-sm w-full sm:w-40 appearance-none cursor-pointer"
-                  >
-                    <option value="">All Blood Groups</option>
-                    {BLOOD_GROUPS.map((bg) => <option key={bg} value={bg}>{bg}</option>)}
-                  </select>
-                </div>
-
-                {/* City */}
-                <input
-                  type="text"
-                  placeholder="Filter by city..."
-                  value={city}
-                  onChange={(e) => { setCity(e.target.value); setPage(1); }}
-                  className="input-field text-sm w-full sm:w-40"
-                />
+                <Link
+                  to="/admin/all-registrations"
+                  className="btn-primary flex items-center gap-2 text-sm px-4 py-2.5 whitespace-nowrap"
+                >
+                  <Users className="w-4 h-4" /> All Members
+                </Link>
 
                 {/* Refresh */}
                 <button
@@ -375,7 +366,7 @@ export default function AdminDashboard() {
                           
                           <div className="grid grid-cols-2 gap-2 text-sm mb-4">
                             <div className="text-gray-600">Age: <span className="font-medium text-gray-900">{r.age}</span></div>
-                            <div className="text-gray-600">Blood: <span className="text-red-600 font-bold">{r.bloodGroup}</span></div>
+                            <div className="text-gray-600">Position: <span className="text-amber-800 font-bold">{r.position || 'Member'}</span></div>
                             <div className="text-gray-600">City: <span className="font-medium text-gray-900">{r.city}</span></div>
                             <div className="text-gray-600">Mobile: <span className="font-mono text-xs text-gray-900">{r.mobileNumber}</span></div>
                           </div>
@@ -409,7 +400,7 @@ export default function AdminDashboard() {
                     <table className="hidden md:table w-full text-sm">
                       <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>
-                          {['Photo', 'Member ID', 'Full Name', 'Age', 'Mobile', 'Blood', 'City', 'Date', ''].map((h) => (
+                          {['Photo', 'Member ID', 'Full Name', 'Position', 'Age', 'Mobile', 'City', 'Date', ''].map((h) => (
                             <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
                               {h}
                             </th>
@@ -431,13 +422,13 @@ export default function AdminDashboard() {
                               {r.uniqueId}
                             </td>
                             <td className="px-4 py-3 font-medium text-gray-800 whitespace-nowrap">{r.fullName}</td>
-                            <td className="px-4 py-3 text-gray-600">{r.age}</td>
-                            <td className="px-4 py-3 text-gray-600 font-mono text-xs">{r.mobileNumber}</td>
-                            <td className="px-4 py-3">
-                              <span className="bg-red-50 text-red-600 text-xs font-bold px-2 py-0.5 rounded">
-                                {r.bloodGroup}
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              <span className="bg-amber-50 text-amber-800 border border-amber-200/60 text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                                {r.position || 'Member'}
                               </span>
                             </td>
+                            <td className="px-4 py-3 text-gray-600">{r.age}</td>
+                            <td className="px-4 py-3 text-gray-600 font-mono text-xs">{r.mobileNumber}</td>
                             <td className="px-4 py-3 text-gray-600">{r.city}</td>
                             <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
                               {new Date(r.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -765,6 +756,28 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+
+      {/* ── Admin Member Modal (Add / Edit) ─────────────────────────────────── */}
+      <AdminMemberModal
+        isOpen={memberModalOpen}
+        onClose={() => setMemberModalOpen(false)}
+        member={editingMember}
+        onSuccess={(_, msg) => {
+          setSuccessToast(msg);
+          setTimeout(() => setSuccessToast(''), 4000);
+          loadStats();
+          loadRegistrations({ page, limit: 20, search, bloodGroup, city });
+        }}
+      />
+
+      {/* Toast Notification */}
+      {successToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-green-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4">
+          <CheckCircle className="w-5 h-5" />
+          <span className="text-sm font-bold">{successToast}</span>
         </div>
       )}
 

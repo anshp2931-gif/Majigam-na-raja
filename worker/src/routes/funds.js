@@ -6,7 +6,7 @@ import { requireAdmin } from '../middleware/auth.js';
 const funds = new Hono();
 
 // GET /api/funds/summary
-funds.get('/summary', async (c) => {
+funds.get('/summary', requireAdmin, async (c) => {
   try {
     const contributionsCol = await getCollection(c.env, 'funds_contributions');
     const expensesCol = await getCollection(c.env, 'funds_expenses');
@@ -45,7 +45,7 @@ funds.get('/summary', async (c) => {
 });
 
 // GET /api/funds/contributions
-funds.get('/contributions', async (c) => {
+funds.get('/contributions', requireAdmin, async (c) => {
   try {
     const collection = await getCollection(c.env, 'funds_contributions');
     // Implement simple pagination/search/filtering if needed, or return all
@@ -75,8 +75,8 @@ funds.get('/contributions', async (c) => {
   }
 });
 
-// GET /api/funds/contributions/:idOrNo (Public receipt view)
-funds.get('/contributions/:idOrNo', async (c) => {
+// GET /api/funds/contributions/:idOrNo
+funds.get('/contributions/:idOrNo', requireAdmin, async (c) => {
   try {
     const idOrNo = c.req.param('idOrNo');
     const collection = await getCollection(c.env, 'funds_contributions');
@@ -98,7 +98,7 @@ funds.get('/contributions/:idOrNo', async (c) => {
 });
 
 // GET /api/funds/expenses
-funds.get('/expenses', async (c) => {
+funds.get('/expenses', requireAdmin, async (c) => {
   try {
     const collection = await getCollection(c.env, 'funds_expenses');
     const search = c.req.query('search') || '';
@@ -156,7 +156,8 @@ funds.post('/contributions', requireAdmin, async (c) => {
     const id = crypto.randomUUID();
     const year = new Date(date).getFullYear() || now.getFullYear();
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const receiptNo = `UALG-${year}-${randomSuffix}`;
+    const prefix = c.env?.ID_PREFIX || 'MNR';
+    const receiptNo = `${prefix}-${year}-${randomSuffix}`;
 
     const doc = {
       id,

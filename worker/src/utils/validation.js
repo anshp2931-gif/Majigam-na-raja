@@ -13,7 +13,6 @@ export function validateFullName(name) {
   const trimmed = name.trim();
   if (trimmed.length < 2) return 'Full name must be at least 2 characters.';
   if (trimmed.length > 100) return 'Full name must not exceed 100 characters.';
-  // Only allow letters, spaces, dots, hyphens
   if (!/^[A-Za-z\s.\-']+$/.test(trimmed)) {
     return 'Full name contains invalid characters.';
   }
@@ -46,24 +45,43 @@ export function validateMobileNumber(mobile) {
 /**
  * Validates blood group against allowed values.
  */
-export function validateBloodGroup(bg) {
-  if (!bg) return 'Blood group is required.';
-  if (!ALLOWED_BLOOD_GROUPS.includes(bg)) {
-    return `Blood group must be one of: ${ALLOWED_BLOOD_GROUPS.join(', ')}.`;
+/**
+ * Validates date of birth.
+ */
+export function validateDateOfBirth(dateOfBirth) {
+  if (!dateOfBirth || typeof dateOfBirth !== 'string') return 'Date of birth is required.';
+  const trimmed = dateOfBirth.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return 'Enter a valid date of birth.';
+
+  const date = new Date(trimmed);
+  if (Number.isNaN(date.getTime())) return 'Enter a valid date of birth.';
+
+  const today = new Date();
+  if (date > today) return 'Date of birth cannot be in the future.';
+  return null;
+}
+
+/**
+ * Validates gender.
+ */
+export function validateGender(gender) {
+  if (!gender || typeof gender !== 'string') return 'Gender is required.';
+  const trimmed = gender.trim();
+  if (!['Male', 'Female', 'Other'].includes(trimmed)) {
+    return 'Gender must be Male, Female, or Other.';
   }
   return null;
 }
 
 /**
- * Validates city name.
+ * Validates email address.
  */
-export function validateCity(city) {
-  if (!city || typeof city !== 'string') return 'City is required.';
-  const trimmed = city.trim();
-  if (trimmed.length < 2) return 'City must be at least 2 characters.';
-  if (trimmed.length > 100) return 'City name is too long.';
-  if (!/^[A-Za-z\s.\-']+$/.test(trimmed)) {
-    return 'City contains invalid characters.';
+export function validateEmail(email) {
+  if (!email || typeof email !== 'string') return 'Email address is required.';
+  const trimmed = email.trim();
+  if (trimmed.length > 255) return 'Email address must not exceed 255 characters.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    return 'Enter a valid email address.';
   }
   return null;
 }
@@ -101,11 +119,14 @@ export function validateRegistration(data, file) {
   const mobileErr = validateMobileNumber(data.mobileNumber);
   if (mobileErr) errors.mobileNumber = mobileErr;
 
-  const bgErr = validateBloodGroup(data.bloodGroup);
-  if (bgErr) errors.bloodGroup = bgErr;
+  const dateOfBirthErr = validateDateOfBirth(data.dateOfBirth);
+  if (dateOfBirthErr) errors.dateOfBirth = dateOfBirthErr;
 
-  const cityErr = validateCity(data.city);
-  if (cityErr) errors.city = cityErr;
+  const genderErr = validateGender(data.gender);
+  if (genderErr) errors.gender = genderErr;
+
+  const emailErr = validateEmail(data.email);
+  if (emailErr) errors.email = emailErr;
 
   const photoErr = validateImageFile(file);
   if (photoErr) errors.photo = photoErr;

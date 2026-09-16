@@ -42,7 +42,7 @@ const FundReceipt = forwardRef(function FundReceipt({ contribution }, ref) {
   const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
   const baseUrl = (!isLocal && typeof window !== 'undefined' && window.location.origin)
     ? window.location.origin
-    : 'https://unity-a-live-group.vercel.app';
+    : (typeof window !== 'undefined' ? window.location.origin : '');
   const qrVerificationValue = `${baseUrl}/admin/receipt/${encodeURIComponent(id || receiptNo)}`;
 
   return (
@@ -99,15 +99,14 @@ const FundReceipt = forwardRef(function FundReceipt({ contribution }, ref) {
               <h1
                 style={{
                   fontSize: '18px',
-                  fontWeight: '800',
+                  fontWeight: '900',
                   letterSpacing: '0.5px',
                   margin: 0,
                   color: '#064e3b',
-                  textTransform: 'uppercase',
                   lineHeight: '1.2',
                 }}
               >
-                UNITY A LIVE GROUP
+                મજીગામ ના રાજા
               </h1>
               <p
                 style={{
@@ -358,15 +357,42 @@ const FundReceipt = forwardRef(function FundReceipt({ contribution }, ref) {
             </span>
           </div>
 
-          {/* Professional Signatory Line */}
+          {/* Official Majigam Na Raja stamp/signatory area */}
           <div style={{ textAlign: 'center', width: '150px' }}>
-            <div style={{ height: '30px' }} />
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                border: '2px solid #065f46',
+                backgroundColor: '#ffffff',
+                margin: '0 auto 6px auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(6,95,70,0.15)',
+                padding: '3px',
+              }}
+            >
+              <img
+                src="/logo.png"
+                alt="Majigam Na Raja Official Stamp"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  display: 'block',
+                }}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            </div>
             <div style={{ borderTop: '1.5px solid #065f46', paddingTop: '4px' }}>
               <span style={{ fontSize: '11px', fontWeight: '800', color: '#064e3b', display: 'block' }}>
                 અધિકૃત સહી / Signatory
               </span>
               <span style={{ fontSize: '9px', color: '#64748b', display: 'block' }}>
-                UNITY A LIVE GROUP
+                મજીગામ ના રાજા
               </span>
             </div>
           </div>

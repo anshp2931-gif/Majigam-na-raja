@@ -9,7 +9,7 @@ export default function GalleryEmpty() {
       </div>
       <h2 className="text-xl font-bold text-gray-700 mb-2">No Photos Yet</h2>
       <p className="text-gray-400 max-w-sm mx-auto">
-        No photos have been added yet. Check back soon for beautiful moments from UNITY A LIVE GROUP.
+        No photos have been added yet. Check back soon for beautiful moments from મજીગામ ના રાજા (MAJIGAM NA RAJA).
       </p>
     </div>
   );

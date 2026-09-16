@@ -1,18 +1,35 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { MongoClient } from 'mongodb';
 
-const directUri = "mongodb://manan:manan0112@ac-wiksll5-shard-00-02.gndr5q0.mongodb.net:27017,ac-wiksll5-shard-00-01.gndr5q0.mongodb.net:27017,ac-wiksll5-shard-00-00.gndr5q0.mongodb.net:27017/unity_a_live_group?ssl=true&replicaSet=atlas-2w6tfe-shard-0&authSource=admin&retryWrites=true&w=majority";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const envPath = path.join(__dirname, '.env');
+
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  process.loadEnvFile(envPath);
+}
+
+const directUri = process.env.MONGODB_DIRECT_URI || process.env.MONGODB_URI;
+const dbName = process.env.MONGODB_DATABASE || 'majigam_na_raja';
+
+if (!directUri) {
+  console.error("❌ MONGODB_URI is not set in worker/.env");
+  process.exit(1);
+}
 
 async function testDirect() {
-  console.log("Testing Direct Seedlist Connection...");
+  console.log("Testing MongoDB Connection...");
   const client = new MongoClient(directUri);
   try {
     await client.connect();
-    console.log("✓ Connected directly without SRV!");
-    const db = client.db("unity_a_live_group");
+    console.log("✓ Connected successfully!");
+    const db = client.db(dbName);
     const count = await db.collection("registrations").countDocuments({});
     console.log("✓ Registration count:", count);
   } catch (err) {
-    console.error("Direct connection failed:", err);
+    console.error("Connection failed:", err);
   } finally {
     await client.close();
   }

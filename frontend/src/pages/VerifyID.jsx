@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle, XCircle, ShieldCheck, ArrowLeft, Droplets, User, Phone, MapPin, Hash, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, ShieldCheck, ArrowLeft, Award, User, Phone, MapPin, Hash, Calendar } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import { PageLoading } from '../components/Loading.jsx';
@@ -58,7 +58,7 @@ export default function VerifyID() {
               could not be verified.
             </p>
             <p className="text-sm text-gray-400 mb-8">
-              This ID does not exist in UNITY A LIVE GROUP's records.
+              This ID does not exist in મજીગામ ના રાજા (MAJIGAM NA RAJA)'s records.
             </p>
             <Link to="/" className="btn-primary inline-flex items-center gap-2">
               <ArrowLeft className="w-4 h-4" /> Back to Home
@@ -90,7 +90,7 @@ export default function VerifyID() {
               </div>
               <div>
                 <p className="font-bold text-green-800 text-sm">✓ ID VERIFIED</p>
-                <p className="text-green-600 text-xs">This is an official UNITY A LIVE GROUP member</p>
+                <p className="text-green-600 text-xs">This is an official member of મજીગામ ના રાજા</p>
               </div>
             </div>
 
@@ -99,8 +99,9 @@ export default function VerifyID() {
               {/* Header */}
               <div className="bg-ualg-navy -mx-6 -mt-6 px-6 pt-6 pb-5 mb-6 text-center">
                 <p className="text-ualg-gold font-black text-sm tracking-widest">
-                  UNITY A LIVE GROUP
+                  મજીગામ ના રાજા
                 </p>
+                <p className="text-gray-300 text-[10px] font-bold tracking-wider uppercase">MAJIGAM NA RAJA</p>
                 <p className="text-gray-400 text-xs tracking-wider mt-1">VERIFIED MEMBER</p>
               </div>
 
@@ -119,10 +120,12 @@ export default function VerifyID() {
                 </div>
               </div>
 
-              {/* Name */}
+              {/* Name & Position */}
               <div className="text-center mb-6">
                 <h1 className="text-2xl font-black text-ualg-navy">{member.fullName}</h1>
-                <p className="text-xs text-ualg-gold font-bold tracking-widest uppercase mt-1">Member</p>
+                <p className="text-xs text-ualg-gold font-bold tracking-widest uppercase mt-1">
+                  {member.position || 'Member'}
+                </p>
               </div>
 
               {/* Member ID */}
@@ -137,17 +140,17 @@ export default function VerifyID() {
               <div className="grid grid-cols-2 gap-4">
                 <VerifyField icon={<Hash className="w-4 h-4" />} label="Age" value={member.age} />
                 <VerifyField
-                  icon={<Droplets className="w-4 h-4 text-red-500" />}
-                  label="Blood Group"
-                  value={member.bloodGroup}
-                  valueClass="text-red-600 font-bold text-lg"
+                  icon={<Award className="w-4 h-4 text-ualg-gold" />}
+                  label="Position"
+                  value={member.position || 'Member'}
+                  valueClass="text-ualg-navy font-bold"
                 />
                 <VerifyField
                   icon={<Phone className="w-4 h-4" />}
                   label="Mobile"
-                  value={`${member.mobileNumber.slice(0, 4)}XXXXXX`}
+                  value={member.mobileNumber ? `${member.mobileNumber.slice(0, 4)}XXXXXX` : '—'}
                 />
-                <VerifyField icon={<MapPin className="w-4 h-4" />} label="City" value={member.city} />
+                <VerifyField icon={<MapPin className="w-4 h-4" />} label="City" value={member.city || '—'} />
                 {member.createdAt && (
                   <VerifyField
                     icon={<Calendar className="w-4 h-4" />}
@@ -164,10 +167,10 @@ export default function VerifyID() {
             {/* Footer */}
             <div className="text-center mt-6">
               <p className="text-xs text-gray-400">
-                Verified by <span className="font-semibold text-ualg-blue">UNITY A LIVE GROUP</span> official portal
+                Verified by <span className="font-semibold text-ualg-blue">મજીગામ ના રાજા (MAJIGAM NA RAJA)</span> official portal
               </p>
-              <Link to="/register" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-ualg-blue mt-2 transition-colors">
-                <ArrowLeft className="w-3 h-3" /> Register as a Member
+              <Link to="/members" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-ualg-blue mt-2 transition-colors">
+                <ArrowLeft className="w-3 h-3" /> View All Members
               </Link>
             </div>
           </>
@@ -189,3 +192,4 @@ function VerifyField({ icon, label, value, valueClass = '', className = '' }) {
     </div>
   );
 }
+

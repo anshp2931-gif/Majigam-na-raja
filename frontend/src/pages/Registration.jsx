@@ -5,12 +5,12 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, User, Hash, Phone, Droplets, MapPin, AlertCircle } from 'lucide-react';
+import { UserPlus, User, Hash, Phone, Calendar, Mail, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import PhotoUpload from '../components/PhotoUpload.jsx';
 import { ButtonLoading } from '../components/Loading.jsx';
-import { registrationSchema, BLOOD_GROUPS } from '../utils/validation.js';
+import { registrationSchema } from '../utils/validation.js';
 import { registerMember } from '../services/api.js';
 
 export default function Registration() {
@@ -46,8 +46,9 @@ export default function Registration() {
     formData.append('fullName', data.fullName.trim());
     formData.append('age', data.age);
     formData.append('mobileNumber', data.mobileNumber.trim());
-    formData.append('bloodGroup', data.bloodGroup);
-    formData.append('city', data.city.trim());
+    formData.append('dateOfBirth', data.dateOfBirth);
+    formData.append('gender', data.gender);
+    formData.append('email', data.email.trim());
     formData.append('photo', photo);
 
     try {
@@ -82,7 +83,7 @@ export default function Registration() {
             Member Registration
           </h1>
           <p className="text-gray-500 mt-2 text-sm">
-            Join <span className="font-semibold text-ualg-blue">UNITY A LIVE GROUP</span> and get your official Digital ID Card
+            Join <span className="font-semibold text-ualg-blue">મજીગામ ના રાજા (MAJIGAM NA RAJA)</span> and get your official Digital ID Card
           </p>
         </div>
 
@@ -108,7 +109,7 @@ export default function Registration() {
                 <input
                   id="fullName"
                   type="text"
-                  placeholder="e.g. Manan Patel"
+                  placeholder="Enter you name "
                   autoComplete="name"
                   className={`input-field pl-10 ${errors.fullName ? 'input-error' : ''}`}
                   {...register('fullName')}
@@ -121,51 +122,29 @@ export default function Registration() {
               )}
             </div>
 
-            {/* Age + Blood Group row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="age" className="block text-sm font-semibold text-gray-700 mb-1">
-                  Age <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    id="age"
-                    type="number"
-                    placeholder="e.g. 18"
-                    min="1"
-                    max="120"
-                    className={`input-field pl-10 ${errors.age ? 'input-error' : ''}`}
-                    {...register('age')}
-                  />
-                </div>
-                {errors.age && (
-                  <p className="text-red-500 text-xs mt-1" role="alert">⚠ {errors.age.message}</p>
-                )}
-              </div>
 
-              <div>
-                <label htmlFor="bloodGroup" className="block text-sm font-semibold text-gray-700 mb-1">
-                  Blood Group <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Droplets className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-400" />
-                  <select
-                    id="bloodGroup"
-                    className={`input-field pl-10 appearance-none cursor-pointer ${errors.bloodGroup ? 'input-error' : ''}`}
-                    {...register('bloodGroup')}
-                  >
-                    <option value="">Select...</option>
-                    {BLOOD_GROUPS.map((bg) => (
-                      <option key={bg} value={bg}>{bg}</option>
-                    ))}
-                  </select>
-                </div>
-                {errors.bloodGroup && (
-                  <p className="text-red-500 text-xs mt-1" role="alert">⚠ {errors.bloodGroup.message}</p>
-                )}
+            {/* Age */}
+            <div>
+              <label htmlFor="age" className="block text-sm font-semibold text-gray-700 mb-1">
+                Age <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  id="age"
+                  type="number"
+                  placeholder=" Enter your age"
+                  min="1"
+                  max="120"
+                  className={`input-field pl-10 ${errors.age ? 'input-error' : ''}`}
+                  {...register('age')}
+                />
               </div>
+              {errors.age && (
+                <p className="text-red-500 text-xs mt-1" role="alert">⚠ {errors.age.message}</p>
+              )}
             </div>
+
 
             {/* Mobile Number */}
             <div>
@@ -178,7 +157,7 @@ export default function Registration() {
                 <input
                   id="mobileNumber"
                   type="tel"
-                  placeholder="9876543210"
+                  placeholder="Enter mobile number"
                   maxLength={10}
                   autoComplete="tel"
                   className={`input-field pl-20 ${errors.mobileNumber ? 'input-error' : ''}`}
@@ -190,24 +169,68 @@ export default function Registration() {
               )}
             </div>
 
-            {/* City */}
+            {/* Date of Birth */}
             <div>
-              <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-1">
-                City <span className="text-red-500">*</span>
+              <label htmlFor="dateOfBirth" className="block text-sm font-semibold text-gray-700 mb-1">
+                Date of Birth <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
-                  id="city"
-                  type="text"
-                  placeholder="e.g. Ahmedabad"
-                  autoComplete="address-level2"
-                  className={`input-field pl-10 ${errors.city ? 'input-error' : ''}`}
-                  {...register('city')}
+                  id="dateOfBirth"
+                  type="date"
+                  className={`input-field pl-10 ${errors.dateOfBirth ? 'input-error' : ''}`}
+                  {...register('dateOfBirth')}
                 />
               </div>
-              {errors.city && (
-                <p className="text-red-500 text-xs mt-1" role="alert">⚠ {errors.city.message}</p>
+              {errors.dateOfBirth && (
+                <p className="text-red-500 text-xs mt-1" role="alert">⚠ {errors.dateOfBirth.message}</p>
+              )}
+            </div>
+
+            {/* Gender */}
+            <div>
+              <label htmlFor="gender" className="block text-sm font-semibold text-gray-700 mb-1">
+                Gender <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  id="gender"
+                  className={`input-field pl-10 ${errors.gender ? 'input-error' : ''}`}
+                  defaultValue=""
+                  {...register('gender')}
+                >
+                  
+                  <option value="">Select gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              {errors.gender && (
+                <p className="text-red-500 text-xs mt-1" role="alert">⚠ {errors.gender.message}</p>
+              )}
+            </div>
+
+            {/* Email address */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
+                Email address <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="Enter email address"
+                  autoComplete="email"
+                  className={`input-field pl-10 ${errors.email ? 'input-error' : ''}`}
+                  {...register('email')}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1" role="alert">⚠ {errors.email.message}</p>
               )}
             </div>
 
@@ -236,7 +259,7 @@ export default function Registration() {
             </button>
 
             <p className="text-center text-xs text-gray-400">
-              By registering, you agree to be a member of UNITY A LIVE GROUP.
+              By registering, you agree to be a member of મજીગામ ના રાજા (MAJIGAM NA RAJA).
             </p>
           </form>
         </div>

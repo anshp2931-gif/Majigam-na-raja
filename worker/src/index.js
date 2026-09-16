@@ -5,6 +5,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import registration from './routes/registration.js';
 import publicRoutes from './routes/public.js';
+import members from './routes/members.js';
 import admin from './routes/admin.js';
 import gallery from './routes/gallery.js';
 import funds from './routes/funds.js';
@@ -51,7 +52,7 @@ app.use('*', async (c, next) => {
 app.get('/', (c) => {
   return c.json({
     success: true,
-    message: 'UNITY A LIVE GROUP API — Running',
+    message: 'MAJIGAM NA RAJA API — Running',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
   });
@@ -74,6 +75,7 @@ app.get('/api/setup', async (c) => {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.route('/api/register', registration);
 app.route('/api/id', publicRoutes);
+app.route('/api/members', members);
 app.route('/api/admin', admin);
 app.route('/api/gallery', gallery);
 app.route('/api/admin/gallery', gallery);

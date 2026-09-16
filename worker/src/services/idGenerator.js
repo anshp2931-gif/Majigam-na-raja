@@ -1,5 +1,5 @@
 // worker/src/services/idGenerator.js
-// Generates unique UALG membership IDs in the format: UALG-YYYY-XXXXXX
+// Generates unique membership IDs in the format: {PREFIX}-YYYY-XXXXXX
 
 const CHARSET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I, O, 0, 1 to avoid confusion
 
@@ -15,21 +15,21 @@ function randomSuffix(length = 6) {
 }
 
 /**
- * Generates a candidate ID: UALG-YYYY-XXXXXX
+ * Generates a candidate ID: PREFIX-YYYY-XXXXXX
  */
-export function generateCandidateId() {
+export function generateCandidateId(prefix = 'MNR') {
   const year = new Date().getFullYear();
   const suffix = randomSuffix(6);
-  return `UALG-${year}-${suffix}`;
+  return `${prefix}-${year}-${suffix}`;
 }
 
 /**
- * Generates a unique membership ID by checking MongoDB for collisions.
+ * Generates a unique membership ID by checking MongoDB / D1 for collisions.
  * Retries up to maxAttempts times.
  */
-export async function generateUniqueId(collection, maxAttempts = 10) {
+export async function generateUniqueId(collection, maxAttempts = 10, prefix = 'MNR') {
   for (let i = 0; i < maxAttempts; i++) {
-    const candidateId = generateCandidateId();
+    const candidateId = generateCandidateId(prefix);
     const existing = await collection.findOne({ uniqueId: candidateId });
     if (!existing) {
       return candidateId;

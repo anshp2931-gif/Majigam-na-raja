@@ -20,8 +20,8 @@ export function PageLoading() {
           <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
           <div className="absolute inset-0 rounded-full border-4 border-ualg-blue border-t-transparent animate-spin"></div>
         </div>
-        <p className="text-ualg-navy font-semibold text-lg">UNITY A LIVE GROUP</p>
-        <p className="text-gray-400 text-sm mt-1">Loading...</p>
+        <p className="text-ualg-navy font-bold text-lg">મજીગામ ના રાજા</p>
+        <p className="text-ualg-gold text-xs font-semibold">MAJIGAM NA RAJA</p>
       </div>
     </div>
   );

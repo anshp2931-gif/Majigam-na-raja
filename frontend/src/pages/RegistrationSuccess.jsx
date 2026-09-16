@@ -72,7 +72,7 @@ export default function RegistrationSuccess() {
           </div>
           <h1 className="text-3xl font-black text-ualg-navy">Registration Successful!</h1>
           <p className="text-gray-500 mt-2">
-            Welcome to <span className="font-semibold text-ualg-blue">UNITY A LIVE GROUP</span>
+            Welcome to <span className="font-semibold text-ualg-blue">મજીગામ ના રાજા (MAJIGAM NA RAJA)</span>
           </p>
         </div>
 
@@ -139,9 +139,10 @@ export default function RegistrationSuccess() {
             {[
               { label: 'Full Name', value: member.fullName },
               { label: 'Age', value: member.age },
-              { label: 'Blood Group', value: member.bloodGroup },
               { label: 'Mobile', value: member.mobileNumber },
-              { label: 'City', value: member.city },
+              { label: 'Date of Birth', value: member.dateOfBirth },
+              { label: 'Gender', value: member.gender },
+              { label: 'Email Address', value: member.email },
               { label: 'Member ID', value: member.uniqueId },
             ].map(({ label, value }) => (
               <div key={label}>

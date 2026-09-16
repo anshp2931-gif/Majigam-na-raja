@@ -10,11 +10,11 @@ const createBaseDoc = (title) => {
   // Header
   doc.setFontSize(20);
   doc.setTextColor(23, 37, 84); // Navy blue
-  doc.text('UNITY A LIVE GROUP', 105, 20, { align: 'center' });
+  doc.text('MAJIGAM NA RAJA', 105, 20, { align: 'center' });
   
   doc.setFontSize(14);
   doc.setTextColor(217, 119, 6); // Amber/Gold
-  doc.text('Ganesh Chaturthi 2026', 105, 28, { align: 'center' });
+  doc.text('Ganesh Mahotsav 2026', 105, 28, { align: 'center' });
   
   // Title
   doc.setFontSize(16);
@@ -35,7 +35,7 @@ const addFooter = (doc) => {
     doc.setPage(i);
     doc.setFontSize(10);
     doc.setTextColor(150, 150, 150);
-    doc.text(`Page ${i} of ${pageCount} | Unity A Live Group - Fund Management System`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
+    doc.text(`Page ${i} of ${pageCount} | Majigam Na Raja - Fund Management System`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
   }
 };
 
@@ -52,7 +52,7 @@ export const generateDaanPDF = (contributions, totalAmount) => {
 
   autoTable(doc, {
     startY: 55,
-    head: [['Name', 'Amount', 'Date', 'Mode', 'Note']],
+    head: [['Contributor Name', 'Amount', 'Date', 'Payment Mode', 'Note']],
     body: tableData,
     theme: 'grid',
     headStyles: { fillColor: [23, 37, 84] },
@@ -67,7 +67,7 @@ export const generateDaanPDF = (contributions, totalAmount) => {
   doc.text(`Total Contributors: ${contributions.length}`, 14, finalY + 25);
 
   addFooter(doc);
-  doc.save('Unity_A_Live_Group_Daan_Report.pdf');
+  doc.save('Majigam_Na_Raja_Daan_Report.pdf');
 };
 
 export const generateExpensesPDF = (expenses, totalSpent) => {
@@ -99,7 +99,7 @@ export const generateExpensesPDF = (expenses, totalSpent) => {
   doc.text(`Total Expenses: ${expenses.length}`, 14, finalY + 25);
 
   addFooter(doc);
-  doc.save('Unity_A_Live_Group_Expenses_Report.pdf');
+  doc.save('Majigam_Na_Raja_Expenses_Report.pdf');
 };
 
 export const generateSummaryPDF = (summary) => {
@@ -129,7 +129,7 @@ export const generateSummaryPDF = (summary) => {
   });
 
   addFooter(doc);
-  doc.save('Unity_A_Live_Group_Fund_Summary.pdf');
+  doc.save('Majigam_Na_Raja_Fund_Summary.pdf');
 };
 
 export const shareFile = async (title, text, file, filename) => {
@@ -142,11 +142,19 @@ export const shareFile = async (title, text, file, filename) => {
       });
       return true;
     } catch (err) {
-      console.log('Share canceled or failed', err);
+      if (err.name !== 'AbortError') {
+        console.error('Error sharing:', err);
+      }
       return false;
     }
   } else {
-    alert("Web Share API is not supported on this device/browser for files. Please use the download button instead.");
+    // Fallback: download
+    const url = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
     return false;
   }
 };

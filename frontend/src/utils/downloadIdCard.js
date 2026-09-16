@@ -41,7 +41,7 @@ export async function downloadAsPDF(element, uniqueId) {
   });
 
   pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-  pdf.save(`UNITY-A-LIVE-GROUP-${uniqueId}.pdf`);
+  pdf.save(`MAJIGAM-NA-RAJA-${uniqueId}.pdf`);
 }
 
 /**
@@ -53,7 +53,7 @@ export async function downloadAsPNG(element, uniqueId) {
   const canvas = await captureElement(element);
 
   const link = document.createElement('a');
-  link.download = `UNITY-A-LIVE-GROUP-${uniqueId}.png`;
+  link.download = `MAJIGAM-NA-RAJA-${uniqueId}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
 }

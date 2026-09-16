@@ -1,7 +1,7 @@
-// frontend/src/components/Navbar.jsx
+﻿// frontend/src/components/Navbar.jsx
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Image as ImageIcon, UserPlus, Menu, X, Coins } from 'lucide-react';
+import { Shield, Image as ImageIcon, Users, Menu, X, Coins, MapPin, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
@@ -10,8 +10,10 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isGalleryActive = currentPath === '/';
-  const isRegisterActive = currentPath === '/register';
-  const isFundsActive = currentPath === '/funds';
+  const isMembersActive = currentPath === '/members' || currentPath.startsWith('/id/');
+  const isFundsActive = currentPath === '/funds' || currentPath === '/admin/funds' || currentPath.startsWith('/receipt/');
+  const isLocationActive = currentPath === '/location';
+  const isAboutActive = currentPath === '/about';
 
   // Close menu when route changes
   useEffect(() => {
@@ -32,8 +34,10 @@ export default function Navbar() {
 
   const navLinks = [
     { name: 'Gallery', path: '/', icon: ImageIcon, isActive: isGalleryActive },
-    { name: 'Register', path: '/register', icon: UserPlus, isActive: isRegisterActive },
+    { name: 'Members', path: '/members', icon: Users, isActive: isMembersActive },
     { name: 'Funds', path: '/funds', icon: Coins, isActive: isFundsActive },
+    { name: 'Location', path: '/location', icon: MapPin, isActive: isLocationActive },
+    { name: 'About', path: '/about', icon: Info, isActive: isAboutActive },
   ];
 
   return (
@@ -45,15 +49,15 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3 group relative z-50">
             <img 
               src="/logo.png" 
-              alt="Unity A Live Group Logo" 
-              className="w-10 h-10 rounded-full object-cover shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0 border-2 border-ualg-gold" 
+              alt="મજીગામ ના રાજા Logo" 
+              className="w-11 h-11 rounded-full object-cover shadow-md group-hover:shadow-lg transition-shadow flex-shrink-0 border-2 border-ualg-gold bg-white" 
             />
             <div>
-              <span className="text-white font-black text-sm sm:text-base tracking-wide leading-tight block truncate max-w-[150px] sm:max-w-full">
-                UNITY A LIVE GROUP
+              <span className="text-white font-black text-sm sm:text-base tracking-wide leading-tight block truncate max-w-[180px] sm:max-w-full">
+                મજીગામ ના રાજા
               </span>
               <span className="text-ualg-gold text-[10px] sm:text-xs font-semibold tracking-wider">
-                COMMUNITY PORTAL
+                MAJIGAM NA RAJA
               </span>
             </div>
           </Link>

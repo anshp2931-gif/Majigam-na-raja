@@ -1,13 +1,14 @@
 // frontend/src/pages/AdminRegistrationDetails.jsx
-// Detailed view of a single registration for admins with ID Card download support
+// Detailed view of a single registration for admins with ID Card download & Edit support
 
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  ArrowLeft, Download, FileImage, Shield, Trash2, Calendar, User, Phone, MapPin, Hash, Droplets, AlertCircle
+  ArrowLeft, Download, FileImage, Shield, Trash2, Calendar, User, Phone, MapPin, Hash, Award, AlertCircle, Pencil
 } from 'lucide-react';
 import { PageLoading, ButtonLoading } from '../components/Loading.jsx';
 import IDCard from '../components/IDCard.jsx';
+import AdminMemberModal from '../components/AdminMemberModal.jsx';
 import { getRegistrationByUniqueId, deleteRegistration, adminLogout } from '../services/api.js';
 import { downloadAsPDF, downloadAsPNG } from '../utils/downloadIdCard.js';
 
@@ -23,15 +24,16 @@ export default function AdminRegistrationDetails() {
   const [downloadingPNG, setDownloadingPNG] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchMember = () => {
+    setLoading(true);
     getRegistrationByUniqueId(uniqueId)
       .then((res) => {
         if (res.success) setMember(res.data);
         else setError(res.message || 'Registration not found');
       })
       .catch((err) => {
-        // 401 is handled by the axios interceptor (redirects to login)
         if (err.response?.status === 401) return;
         if (err.response?.status === 404) {
           setError('Registration not found. The ID may be invalid or deleted.');
@@ -40,6 +42,10 @@ export default function AdminRegistrationDetails() {
         }
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchMember();
   }, [uniqueId]);
 
   const handleDownloadPDF = async () => {
@@ -92,12 +98,12 @@ export default function AdminRegistrationDetails() {
             </Link>
             <img 
               src="/logo.png" 
-              alt="Unity A Live Group Logo" 
-              className="w-8 h-8 rounded-full object-cover border-2 border-ualg-gold flex-shrink-0" 
+              alt="મજીગામ ના રાજા Logo" 
+              className="w-8 h-8 rounded-full object-cover border-2 border-ualg-gold flex-shrink-0 bg-white" 
             />
             <div>
-              <p className="text-white font-black text-sm leading-none">UNITY A LIVE GROUP</p>
-              <p className="text-blue-300 text-xs">Registration Details</p>
+              <p className="text-white font-black text-sm leading-none">મજીગામ ના રાજા</p>
+              <p className="text-ualg-gold text-[10px] font-bold">MAJIGAM NA RAJA</p>
             </div>
           </div>
           <button
@@ -158,11 +164,12 @@ export default function AdminRegistrationDetails() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <InfoItem icon={<User className="w-4 h-4" />} label="Full Name" value={member.fullName} />
+                  <InfoItem icon={<Award className="w-4 h-4 text-ualg-gold" />} label="Position" value={member.position || 'Member'} valueClass="font-bold text-amber-700" />
                   <InfoItem icon={<Hash className="w-4 h-4" />} label="Age" value={`${member.age} years`} />
                   <InfoItem icon={<Phone className="w-4 h-4" />} label="Mobile Number" value={member.mobileNumber} />
-                  <InfoItem icon={<Droplets className="w-4 h-4 text-red-500" />} label="Blood Group" value={member.bloodGroup} valueClass="text-red-600 font-bold" />
+                  <InfoItem icon={<User className="w-4 h-4" />} label="Gender" value={member.gender} />
                   <InfoItem icon={<MapPin className="w-4 h-4" />} label="City" value={member.city} />
-                  <InfoItem icon={<Calendar className="w-4 h-4" />} label="Registration Date" value={new Date(member.createdAt).toLocaleDateString('en-IN')} />
+                  <InfoItem icon={<Calendar className="w-4 h-4" />} label="Registration Date" value={new Date(member.createdAt).toLocaleDateString('en-IN')} className="col-span-2" />
                 </div>
               </div>
 
@@ -170,6 +177,12 @@ export default function AdminRegistrationDetails() {
               <div className="card shadow-md">
                 <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4">Actions</h2>
                 <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => setEditModalOpen(true)}
+                    className="btn-outline flex-1 min-w-[130px] flex items-center justify-center gap-2 text-sm border-amber-500 text-amber-600 hover:bg-amber-50"
+                  >
+                    <Pencil className="w-4 h-4" /> Edit Details
+                  </button>
                   <button
                     onClick={handleDownloadPDF}
                     disabled={downloadingPDF || downloadingPNG}
@@ -204,6 +217,18 @@ export default function AdminRegistrationDetails() {
           </div>
         ) : null}
       </main>
+
+      {/* Edit Member Modal */}
+      {editModalOpen && (
+        <AdminMemberModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          member={member}
+          onSuccess={(updated) => {
+            setMember(updated);
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteModal && (

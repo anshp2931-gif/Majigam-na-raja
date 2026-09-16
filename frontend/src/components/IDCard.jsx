@@ -11,8 +11,11 @@ const IDCard = forwardRef(function IDCard({ member }, ref) {
     fullName,
     age,
     mobileNumber,
-    bloodGroup,
+    dateOfBirth,
+    gender,
+    email,
     city,
+    position,
     photoUrl,
     createdAt,
   } = member;
@@ -24,6 +27,14 @@ const IDCard = forwardRef(function IDCard({ member }, ref) {
         year: 'numeric',
       })
     : '';
+
+  const dob = dateOfBirth
+    ? new Date(dateOfBirth).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '—';
 
   return (
     <div
@@ -77,12 +88,20 @@ const IDCard = forwardRef(function IDCard({ member }, ref) {
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} 
             />
           </div>
-          <p style={{
-            color: '#f0a500', fontSize: '15px', fontWeight: '900',
-            letterSpacing: '1.5px', margin: 0, lineHeight: 1.2,
-          }}>
-            UNITY A LIVE GROUP
-          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+            <span style={{
+              color: '#f0a500', fontSize: '15px', fontWeight: '900',
+              letterSpacing: '0.5px', margin: 0, lineHeight: 1.2,
+            }}>
+              મજીગામ ના રાજા
+            </span>
+            <span style={{
+              color: 'rgba(255,255,255,0.75)', fontSize: '8px', fontWeight: '700',
+              letterSpacing: '1.5px', margin: 0, lineHeight: 1,
+            }}>
+              MAJIGAM NA RAJA
+            </span>
+          </div>
         </div>
 
         <p style={{
@@ -90,7 +109,7 @@ const IDCard = forwardRef(function IDCard({ member }, ref) {
           letterSpacing: '3px', fontWeight: '500',
           textTransform: 'uppercase', margin: '0',
         }}>
-          OFFICIAL MEMBERSHIP CARD
+          YOUR DIGITAL ID CARD
         </p>
 
         {/* Gold divider */}
@@ -144,9 +163,9 @@ const IDCard = forwardRef(function IDCard({ member }, ref) {
           </p>
           <p style={{
             fontSize: '11px', color: '#f0a500', fontWeight: '700',
-            letterSpacing: '2px', margin: '2px 0 0',
+            letterSpacing: '2px', margin: '2px 0 0', textTransform: 'uppercase',
           }}>
-            MEMBER
+            {position || 'MEMBER'}
           </p>
         </div>
 
@@ -169,15 +188,21 @@ const IDCard = forwardRef(function IDCard({ member }, ref) {
 
         {/* Details grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-          <DetailItem label="Age" value={age} />
-          <DetailItem
-            label="Blood Group"
-            value={bloodGroup}
-            valueStyle={{ color: '#dc2626', fontWeight: '700' }}
-          />
+          <DetailItem label="Age" value={age ? `${age} yrs` : '—'} />
           <DetailItem label="Mobile" value={mobileNumber} />
-          <DetailItem label="City" value={city} />
+          <DetailItem label="Date of Birth" value={dob} />
+          <DetailItem label="Gender" value={gender} />
         </div>
+
+        <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: '8px', marginTop: '4px' }}>
+          <DetailItem label="Email" value={email} />
+        </div>
+
+        {city && (
+          <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: '8px', marginTop: '4px' }}>
+            <DetailItem label="City / Village" value={city} />
+          </div>
+        )}
 
         {registrationDate && (
           <div style={{
@@ -200,7 +225,7 @@ const IDCard = forwardRef(function IDCard({ member }, ref) {
             SCAN TO VERIFY
           </p>
           <p style={{ fontSize: '10px', color: '#0d1b4b', fontWeight: '600', margin: 0 }}>
-            unity-a-live-group.vercel.app
+            {typeof window !== 'undefined' ? window.location.host : 'majigam-na-raja'}
           </p>
         </div>
         <QRCodeComponent uniqueId={uniqueId} size={72} />
@@ -216,7 +241,7 @@ const IDCard = forwardRef(function IDCard({ member }, ref) {
           color: 'rgba(255,255,255,0.5)', fontSize: '8px',
           letterSpacing: '1.5px', margin: 0,
         }}>
-          UNITY A LIVE GROUP • OFFICIAL ID • NOT TRANSFERABLE
+          મજીગામ ના રાજા • OFFICIAL ID • NOT TRANSFERABLE
         </p>
       </div>
     </div>

@@ -3,7 +3,6 @@
 import { MongoClient } from 'mongodb';
 
 let cachedClient = null;
-const DEFAULT_URI = 'mongodb+srv://manan:manan0112@cluster0.gndr5q0.mongodb.net/?retryWrites=true&w=majority';
 
 function buildWhere(filter, values) {
   if (!filter || Object.keys(filter).length === 0) return '1 = 1';
@@ -62,7 +61,7 @@ class D1Collection {
     if (projection.length > 0 && projection[0] !== '*') {
       cols = projection.join(', ');
     } else if (this.collectionName === 'registrations' && !options.projection) {
-       cols = 'uniqueId, fullName, age, mobileNumber, bloodGroup, city, photoUrl, photoPublicId, createdAt, updatedAt';
+       cols = 'uniqueId, fullName, age, mobileNumber, bloodGroup, dateOfBirth, gender, email, photoUrl, photoPublicId, createdAt, updatedAt';
     }
 
     const sort = options.sort
@@ -172,14 +171,17 @@ class D1Collection {
 
 async function getMongoCollection(env, collectionName = null) {
   if (!cachedClient) {
-    cachedClient = new MongoClient(env.MONGODB_URI || DEFAULT_URI, {
+    if (!env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined in environment variables.');
+    }
+    cachedClient = new MongoClient(env.MONGODB_URI, {
       serverSelectionTimeoutMS: 15000,
       connectTimeoutMS: 15000,
       socketTimeoutMS: 30000,
     });
     await cachedClient.connect();
   }
-  return cachedClient.db(env.MONGODB_DATABASE || 'unity_a_live_group')
+  return cachedClient.db(env.MONGODB_DATABASE || 'majigam_na_raja')
     .collection(collectionName || env.MONGODB_COLLECTION || 'registrations');
 }
 
