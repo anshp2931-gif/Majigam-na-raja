@@ -99,7 +99,12 @@ admin.post('/login', async (c) => {
   // Set HTTP-only cookie
   setAuthCookie(c, token);
 
-  return c.json({ success: true, message: 'Login successful.' });
+  return c.json({
+    success: true,
+    message: 'Login successful.',
+    token,
+    data: { username, role: 'admin' },
+  });
 });
 
 // ─── POST /api/admin/logout ───────────────────────────────────────────────────

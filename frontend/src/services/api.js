@@ -11,10 +11,40 @@ const API_URL =
     ? 'https://majigam-na-raja.anshp2931.workers.dev'
     : 'http://localhost:8787');
 
+const TOKEN_KEY = 'mnr_admin_token';
+
+export function getAdminToken() {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setAdminToken(token) {
+  if (typeof window === 'undefined') return;
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+}
+
+export function removeAdminToken() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(TOKEN_KEY);
+}
+
 const api = axios.create({
   baseURL: API_URL,
   withCredentials: true, // Required for HTTP-only cookies (admin auth)
   timeout: 30000,
+});
+
+// ─── Request interceptor ──────────────────────────────────────────────────────
+api.interceptors.request.use((config) => {
+  const token = getAdminToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // ─── Response interceptor ─────────────────────────────────────────────────────
@@ -22,6 +52,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      removeAdminToken();
       const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       const isProtectedFundsPage =
         window.location.pathname.startsWith('/admin') ||
@@ -70,12 +101,19 @@ export async function verifyMemberId(uniqueId) {
 
 export async function adminLogin(username, password) {
   const response = await api.post('/api/admin/login', { username, password });
+  if (response.data?.token) {
+    setAdminToken(response.data.token);
+  }
   return response.data;
 }
 
 export async function adminLogout() {
-  const response = await api.post('/api/admin/logout');
-  return response.data;
+  try {
+    const response = await api.post('/api/admin/logout');
+    return response.data;
+  } finally {
+    removeAdminToken();
+  }
 }
 
 export async function getAdminMe() {

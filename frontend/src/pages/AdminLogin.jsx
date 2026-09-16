@@ -7,7 +7,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Shield, User, Lock, AlertCircle, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { ButtonLoading } from '../components/Loading.jsx';
 import { adminLoginSchema } from '../utils/validation.js';
-import { adminLogin, getAdminMe } from '../services/api.js';
+import { adminLogin, getAdminMe, getAdminToken, removeAdminToken } from '../services/api.js';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -25,9 +25,14 @@ export default function AdminLogin() {
 
   // Redirect if already logged in
   useEffect(() => {
+    const token = getAdminToken();
+    if (!token) return; // Not logged in — stay on login page
+
     getAdminMe()
       .then(() => navigate(redirectTarget, { replace: true }))
-      .catch(() => {}); // Not logged in — stay on login page
+      .catch(() => {
+        removeAdminToken();
+      });
   }, [navigate, redirectTarget]);
 
   const onSubmit = async ({ username, password }) => {

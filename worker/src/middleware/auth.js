@@ -111,52 +111,80 @@ export function getTokenFromCookie(c) {
   const cookies = Object.fromEntries(
     cookieHeader.split(';').map((pair) => {
       const [key, ...val] = pair.trim().split('=');
-      return [key, val.join('=')];
+      return [key, val ? val.join('=') : ''];
     })
   );
   return cookies[TOKEN_COOKIE_NAME] || null;
 }
 
 /**
+ * Reads the admin token from Authorization header (Bearer ...) or HTTP-only cookies.
+ */
+export function getTokenFromRequest(c) {
+  const authHeader = c.req.header('Authorization') || c.req.header('authorization') || '';
+  if (authHeader.startsWith('Bearer ')) {
+    const bearer = authHeader.slice(7).trim();
+    if (bearer) return bearer;
+  }
+  return getTokenFromCookie(c);
+}
+
+/**
  * Sets the admin auth cookie on the response.
  */
 export function setAuthCookie(c, token) {
-  const cookieValue = [
+  const url = c.req.url || '';
+  const isSecure = url.startsWith('https://');
+
+  const cookieParts = [
     `${TOKEN_COOKIE_NAME}=${token}`,
     'HttpOnly',
-    'Secure',
-    'SameSite=None',
-    `Max-Age=${TOKEN_EXPIRY_SECONDS}`,
     'Path=/',
-  ].join('; ');
+    `Max-Age=${TOKEN_EXPIRY_SECONDS}`,
+  ];
 
-  c.header('Set-Cookie', cookieValue);
+  if (isSecure) {
+    cookieParts.push('Secure');
+    cookieParts.push('SameSite=None');
+  } else {
+    cookieParts.push('SameSite=Lax');
+  }
+
+  c.header('Set-Cookie', cookieParts.join('; '));
 }
 
 /**
  * Clears the admin auth cookie.
  */
 export function clearAuthCookie(c) {
-  const cookieValue = [
+  const url = c.req.url || '';
+  const isSecure = url.startsWith('https://');
+
+  const cookieParts = [
     `${TOKEN_COOKIE_NAME}=`,
     'HttpOnly',
-    'Secure',
-    'SameSite=None',
-    'Max-Age=0',
     'Path=/',
-  ].join('; ');
+    'Max-Age=0',
+  ];
 
-  c.header('Set-Cookie', cookieValue);
+  if (isSecure) {
+    cookieParts.push('Secure');
+    cookieParts.push('SameSite=None');
+  } else {
+    cookieParts.push('SameSite=Lax');
+  }
+
+  c.header('Set-Cookie', cookieParts.join('; '));
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 
 /**
- * Hono middleware that verifies admin JWT from cookie.
+ * Hono middleware that verifies admin JWT from Authorization header or cookie.
  * Attaches the decoded payload to c.set('admin', payload).
  */
 export async function requireAdmin(c, next) {
-  const token = getTokenFromCookie(c);
+  const token = getTokenFromRequest(c);
 
   if (!token) {
     return c.json({ success: false, message: 'Authentication required.' }, 401);

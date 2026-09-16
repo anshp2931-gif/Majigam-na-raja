@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getAdminMe } from '../services/api.js';
+import { getAdminMe, getAdminToken } from '../services/api.js';
 import { PageLoading } from './Loading.jsx';
 
 export default function ProtectedRoute({ children }) {
@@ -14,6 +14,13 @@ export default function ProtectedRoute({ children }) {
 
   useEffect(() => {
     const redirectTarget = `${location.pathname}${location.search}${location.hash}`;
+    const token = getAdminToken();
+
+    if (!token) {
+      navigate(`/admin/login?redirect=${encodeURIComponent(redirectTarget)}`, { replace: true });
+      setChecking(false);
+      return;
+    }
 
     getAdminMe()
       .then(() => {
