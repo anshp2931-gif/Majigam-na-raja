@@ -2,6 +2,11 @@ name = "majigam-na-raja"
 main = "src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
+[[d1_databases]]
+binding = "DB"
+database_name = "majigam-na-raja-db"
+database_id = "1e7388b3-3220-4017-b397-1b2f0fcdcd60"
+migrations_dir = "migrations"
 
 [vars]
 MONGODB_URI = "mongodb+srv://ansh:ansh01234@cluster0.2rwa1ew.mongodb.net/?appName=Cluster0"
