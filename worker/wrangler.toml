@@ -4,9 +4,12 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
+MONGODB_URI = "mongodb+srv://ansh:ansh01234@cluster0.2rwa1ew.mongodb.net/?appName=Cluster0"
 MONGODB_DATABASE = "majigam_na_raja"
 MONGODB_COLLECTION = "registrations"
 CLOUDINARY_CLOUD_NAME = "ihunohzo"
+CLOUDINARY_API_KEY = "936751298755998"
+CLOUDINARY_API_SECRET = "nFGxdtdH3itsAGEQ-BZE3UVhLBw"
 PUBLIC_BASE_URL = "https://majigam-na-raja.vercel.app"
 ALLOWED_ORIGINS = "*"
 ID_PREFIX = "MNR"
