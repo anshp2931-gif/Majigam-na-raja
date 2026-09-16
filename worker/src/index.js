@@ -20,18 +20,18 @@ app.use('*', async (c, next) => {
     ...c.env,
   };
 
-  const allowedOrigins = (c.env.ALLOWED_ORIGINS || 'http://localhost:5173')
+  const origin = c.req.header('Origin') || '';
+  const allowedOrigins = (c.env.ALLOWED_ORIGINS || '*')
     .split(',')
     .map((o) => o.trim());
 
-  const origin = c.req.header('Origin') || '';
-  const isAllowed = allowedOrigins.includes(origin) || allowedOrigins.includes('*');
+  const isAllowed = allowedOrigins.includes('*') || allowedOrigins.includes(origin) || !origin;
 
   if (c.req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': isAllowed ? origin : allowedOrigins[0],
+        'Access-Control-Allow-Origin': origin || '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Access-Control-Allow-Credentials': 'true',
@@ -42,9 +42,11 @@ app.use('*', async (c, next) => {
 
   await next();
 
-  if (isAllowed) {
+  if (origin) {
     c.res.headers.set('Access-Control-Allow-Origin', origin);
     c.res.headers.set('Access-Control-Allow-Credentials', 'true');
+  } else {
+    c.res.headers.set('Access-Control-Allow-Origin', '*');
   }
 });
 
