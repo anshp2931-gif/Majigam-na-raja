@@ -1,21 +1,15 @@
-name = "majigam-na-raja-api"
+name = "majigam-na-raja"
 main = "src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-
-[[d1_databases]]
-binding = "DB"
-database_name = "majigam-na-raja-db"
-database_id = "YOUR_D1_DATABASE_ID_HERE"
-migrations_dir = "migrations"
 
 [vars]
 MONGODB_DATABASE = "majigam_na_raja"
 MONGODB_COLLECTION = "registrations"
 CLOUDINARY_CLOUD_NAME = "ihunohzo"
-PUBLIC_BASE_URL = "http://localhost:5173"
+PUBLIC_BASE_URL = "https://majigam-na-raja.vercel.app"
 ALLOWED_ORIGINS = "*"
 ID_PREFIX = "MNR"
 ADMIN_USERNAME = "majigamnaraja1967"
 ADMIN_PASSWORD_HASH = "d7732e1f2aa7d7d18b02ee087e71159a453df9b778ff95b4d5a8e0bc8d960b0c"
-SESSION_SECRET = "majigam-na-raja-session-secret"
+SESSION_SECRET = "mnr_secret_session_key_2026_majigam_na_raja"
