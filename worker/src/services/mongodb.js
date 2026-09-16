@@ -169,25 +169,124 @@ class D1Collection {
   async createIndex() { return { success: true }; }
 }
 
-async function getMongoCollection(env, collectionName = null) {
-  if (!cachedClient) {
-    if (!env.MONGODB_URI) {
-      throw new Error('MONGODB_URI is not defined in environment variables.');
-    }
-    cachedClient = new MongoClient(env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000,
-      socketTimeoutMS: 30000,
-    });
-    await cachedClient.connect();
+async function createMongoClient(uri) {
+  const client = new MongoClient(uri, {
+    serverSelectionTimeoutMS: 8000,
+    connectTimeoutMS: 8000,
+    socketTimeoutMS: 20000,
+    maxPoolSize: 10,
+    minPoolSize: 0,
+    maxIdleTimeMS: 5000,
+  });
+  await client.connect();
+  return client;
+}
+
+async function getMongoClient(env) {
+  if (!env.MONGODB_URI) {
+    throw new Error('MONGODB_URI is not defined in environment variables.');
   }
-  return cachedClient.db(env.MONGODB_DATABASE || 'majigam_na_raja')
+
+  if (cachedClient) {
+    try {
+      if (
+        !cachedClient.topology ||
+        cachedClient.topology.isDestroyed() ||
+        cachedClient.topology.s?.state === 'closed'
+      ) {
+        try { await cachedClient.close(); } catch {}
+        cachedClient = null;
+      } else {
+        // Quick ping to ensure socket wasn't killed while worker was idle
+        await cachedClient.db('admin').command({ ping: 1 });
+      }
+    } catch {
+      try { await cachedClient.close(); } catch {}
+      cachedClient = null;
+    }
+  }
+
+  if (!cachedClient) {
+    cachedClient = await createMongoClient(env.MONGODB_URI);
+  }
+
+  return cachedClient;
+}
+
+async function getRawMongoCollection(env, collectionName = null) {
+  const client = await getMongoClient(env);
+  return client
+    .db(env.MONGODB_DATABASE || 'majigam_na_raja')
     .collection(collectionName || env.MONGODB_COLLECTION || 'registrations');
+}
+
+function wrapWithAutoReconnect(col, env, collectionName) {
+  return new Proxy(col, {
+    get(target, prop, receiver) {
+      const orig = target[prop];
+      if (typeof orig !== 'function') return orig;
+
+      return function (...args) {
+        const result = orig.apply(target, args);
+
+        // Promises: findOne, insertOne, updateOne, deleteOne, countDocuments
+        if (result && typeof result.then === 'function') {
+          return result.catch(async (err) => {
+            const isTopologyError =
+              err.message?.includes('Topology is closed') ||
+              err.message?.includes('topology was closed') ||
+              err.name === 'MongoTopologyClosedError' ||
+              err.name === 'MongoServerSelectionError' ||
+              err.name === 'MongoNetworkError';
+
+            if (isTopologyError) {
+              console.warn(`[MongoDB] Topology closed detected (${err.message}). Reconnecting...`);
+              try { await cachedClient?.close(); } catch {}
+              cachedClient = null;
+              const freshCol = await getRawMongoCollection(env, collectionName);
+              return freshCol[prop](...args);
+            }
+            throw err;
+          });
+        }
+
+        // Cursors: find, aggregate
+        if (result && typeof result.toArray === 'function') {
+          const origToArray = result.toArray.bind(result);
+          result.toArray = async function () {
+            try {
+              return await origToArray();
+            } catch (err) {
+              const isTopologyError =
+                err.message?.includes('Topology is closed') ||
+                err.message?.includes('topology was closed') ||
+                err.name === 'MongoTopologyClosedError' ||
+                err.name === 'MongoServerSelectionError' ||
+                err.name === 'MongoNetworkError';
+
+              if (isTopologyError) {
+                console.warn(`[MongoDB Cursor] Topology closed detected (${err.message}). Reconnecting...`);
+                try { await cachedClient?.close(); } catch {}
+                cachedClient = null;
+                const freshCol = await getRawMongoCollection(env, collectionName);
+                return freshCol[prop](...args).toArray();
+              }
+              throw err;
+            }
+          };
+          return result;
+        }
+
+        return result;
+      };
+    },
+  });
 }
 
 export async function getCollection(env, collectionName = 'registrations') {
   if (env.DB && !env.DB.isMock) return new D1Collection(env.DB, collectionName);
-  return getMongoCollection(env, collectionName);
+  const rawCol = await getRawMongoCollection(env, collectionName);
+  return wrapWithAutoReconnect(rawCol, env, collectionName);
 }
 
 export async function ensureIndexes(env) {
