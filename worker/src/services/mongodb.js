@@ -1,7 +1,5 @@
 // Database service. Cloudflare production uses D1; local Node development can use MongoDB.
 
-import { MongoClient } from 'mongodb';
-
 let cachedClient = null;
 
 function buildWhere(filter, values) {
@@ -170,6 +168,13 @@ class D1Collection {
 }
 
 async function createMongoClient(uri) {
+  let MongoClient;
+  try {
+    const mongoModule = await import('mongodb');
+    MongoClient = mongoModule.MongoClient;
+  } catch (err) {
+    throw new Error(`MongoDB client could not be loaded: ${err.message}. Cloudflare D1 is recommended.`);
+  }
   const client = new MongoClient(uri, {
     serverSelectionTimeoutMS: 8000,
     connectTimeoutMS: 8000,
@@ -290,6 +295,7 @@ export async function getCollection(env, collectionName = 'registrations') {
 }
 
 export async function ensureIndexes(env) {
+  if (env.DB && !env.DB.isMock) return true;
   const collection = await getCollection(env);
   await collection.createIndex({ uniqueId: 1 }, { unique: true });
   return true;

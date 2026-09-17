@@ -14,40 +14,24 @@ import { ensureIndexes } from './services/mongodb.js';
 const app = new Hono();
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
+app.use(
+  '*',
+  cors({
+    origin: (origin) => origin || '*',
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposeHeaders: ['Content-Length', 'Set-Cookie'],
+    credentials: true,
+    maxAge: 86400,
+  })
+);
+
 app.use('*', async (c, next) => {
   c.env = {
     ...(typeof process !== 'undefined' ? process.env : {}),
     ...c.env,
   };
-
-  const origin = c.req.header('Origin') || '';
-  const allowedOrigins = (c.env.ALLOWED_ORIGINS || '*')
-    .split(',')
-    .map((o) => o.trim());
-
-  const isAllowed = allowedOrigins.includes('*') || allowedOrigins.includes(origin) || !origin;
-
-  if (c.req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': origin || '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Allow-Credentials': 'true',
-        'Access-Control-Max-Age': '86400',
-      },
-    });
-  }
-
   await next();
-
-  if (origin) {
-    c.res.headers.set('Access-Control-Allow-Origin', origin);
-    c.res.headers.set('Access-Control-Allow-Credentials', 'true');
-  } else {
-    c.res.headers.set('Access-Control-Allow-Origin', '*');
-  }
 });
 
 // ─── Health check ─────────────────────────────────────────────────────────────
