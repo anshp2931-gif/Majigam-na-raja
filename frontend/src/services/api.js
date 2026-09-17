@@ -8,7 +8,7 @@ const API_URL =
   (typeof window !== 'undefined' &&
    window.location.hostname !== 'localhost' &&
    window.location.hostname !== '127.0.0.1'
-    ? 'https://majigam-na-raja.anshp2931.workers.dev'
+    ? 'https://majigam-na-raja-api.anshp2931.workers.dev'
     : 'http://localhost:8787');
 
 const TOKEN_KEY = 'mnr_admin_token';
