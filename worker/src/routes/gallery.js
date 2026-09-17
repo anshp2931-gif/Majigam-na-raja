@@ -1,20 +1,17 @@
 // worker/src/routes/gallery.js
 // Public: GET /api/gallery
+//         GET /api/gallery/years
 // Admin:  POST /api/admin/gallery/upload
 //         DELETE /api/admin/gallery/:id
 
 import { Hono } from 'hono';
 import { requireAdmin } from '../middleware/auth.js';
 import { uploadToCloudinaryGallery, deleteFromCloudinary } from '../services/cloudinary.js';
+import { getCollection } from '../services/mongodb.js';
 
 const gallery = new Hono();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getDB(c) {
-  if (!c.env.DB) throw new Error('D1 database binding "DB" is not configured.');
-  return c.env.DB;
-}
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const ALLOWED_VIDEO_TYPES = [
@@ -31,11 +28,13 @@ const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
 // ─── GET /api/gallery/years  (public) ─────────────────────────────────────────
 gallery.get('/years', async (c) => {
   try {
-    const db = getDB(c);
-    const rows = await db
-      .prepare('SELECT DISTINCT year FROM gallery_images WHERE year IS NOT NULL ORDER BY year DESC')
-      .all();
-    const years = (rows.results || []).map((r) => r.year);
+    const col = await getCollection(c.env, 'gallery_images');
+    const distinctYears = await col.distinct('year', { year: { $ne: null } });
+    const years = (distinctYears || [])
+      .filter((y) => y !== null && y !== undefined && !isNaN(Number(y)))
+      .map((y) => Number(y))
+      .sort((a, b) => b - a);
+
     return c.json({ success: true, years });
   } catch (err) {
     console.error('Gallery years fetch error:', err);
@@ -52,56 +51,44 @@ gallery.get('/', async (c) => {
   const offset = (page - 1) * limit;
 
   try {
-    const db = getDB(c);
-
-    const conditions = [];
-    const params = [];
-    const countParams = [];
+    const col = await getCollection(c.env, 'gallery_images');
+    const filter = {};
 
     if (typeFilter && ['image', 'video'].includes(typeFilter)) {
-      conditions.push('media_type = ?');
-      params.push(typeFilter);
-      countParams.push(typeFilter);
+      filter.mediaType = typeFilter;
     }
 
     const yearNum = yearFilter ? parseInt(yearFilter) : NaN;
     if (!isNaN(yearNum) && yearNum > 1900 && yearNum < 3000) {
-      conditions.push('year = ?');
-      params.push(yearNum);
-      countParams.push(yearNum);
+      filter.year = yearNum;
     }
 
-    const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
-    const query = `SELECT id, title, image_url, public_id, asset_id, original_filename, file_size, media_type, year, created_at FROM gallery_images${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
-    const countQuery = `SELECT COUNT(*) as total FROM gallery_images${whereClause}`;
-
-    params.push(limit, offset);
-
-    const [rows, countRow] = await Promise.all([
-      db.prepare(query).bind(...params).all(),
-      countParams.length > 0
-        ? db.prepare(countQuery).bind(...countParams).first()
-        : db.prepare(countQuery).first(),
+    const [rows, total] = await Promise.all([
+      col
+        .find(filter)
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .toArray(),
+      col.countDocuments(filter),
     ]);
 
-    const total = countRow?.total ?? 0;
     const hasMore = offset + limit < total;
 
     return c.json({
       success: true,
-      data: (rows.results || []).map((r) => {
-        // Detect media_type if column was null/empty
-        const isVideo = r.media_type === 'video' || (r.image_url && r.image_url.includes('/video/'));
+      data: (rows || []).map((r) => {
+        const isVideo = r.mediaType === 'video' || (r.imageUrl && r.imageUrl.includes('/video/'));
         return {
-          id: r.id,
+          id: r._id?.toString() || r.id,
           title: r.title || null,
-          imageUrl: r.image_url,
-          publicId: r.public_id,
-          originalFilename: r.original_filename,
-          fileSize: r.file_size,
+          imageUrl: r.imageUrl,
+          publicId: r.publicId,
+          originalFilename: r.originalFilename,
+          fileSize: r.fileSize,
           mediaType: isVideo ? 'video' : 'image',
           year: r.year || null,
-          createdAt: r.created_at,
+          createdAt: r.createdAt,
         };
       }),
       page,
@@ -170,73 +157,80 @@ gallery.post('/upload', requireAdmin, async (c) => {
     return c.json({ success: false, message: `Upload failed: ${err.message}` }, 500);
   }
 
-  // Save to D1
+  // Save to MongoDB Atlas
   try {
-    const db = getDB(c);
-    const stmt = db.prepare(
-      'INSERT INTO gallery_images (title, image_url, public_id, asset_id, original_filename, file_size, media_type, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-    );
-    const result = await stmt.bind(
+    const col = await getCollection(c.env, 'gallery_images');
+    const doc = {
       title,
-      cloudResult.secure_url,
-      cloudResult.public_id,
-      cloudResult.asset_id || null,
-      file.name || null,
-      arrayBuffer.byteLength,
+      imageUrl: cloudResult.secure_url,
+      publicId: cloudResult.public_id,
+      assetId: cloudResult.asset_id || null,
+      originalFilename: file.name || null,
+      fileSize: arrayBuffer.byteLength,
       mediaType,
-      yearValue,
-    ).run();
+      year: yearValue,
+      createdAt: new Date(),
+    };
+
+    const insertResult = await col.insertOne(doc);
+    const id = insertResult?.insertedId || doc._id || crypto.randomUUID();
 
     return c.json({
       success: true,
       message: `${isVideo ? 'Video' : 'Photo'} uploaded successfully.`,
       data: {
-        id: result.meta?.last_row_id,
-        title,
-        imageUrl: cloudResult.secure_url,
-        publicId: cloudResult.public_id,
-        originalFilename: file.name,
-        fileSize: arrayBuffer.byteLength,
-        mediaType,
-        year: yearValue,
-        createdAt: new Date().toISOString(),
+        id: id.toString(),
+        ...doc,
       },
     }, 201);
   } catch (err) {
-    // Attempt to clean up Cloudinary on D1 failure
+    // Clean up Cloudinary on DB failure
     try { await deleteFromCloudinary(cloudResult.public_id, c.env, mediaType); } catch {}
-    console.error('D1 insert error:', err);
+    console.error('MongoDB gallery insert error:', err);
     return c.json({ success: false, message: `Failed to save record: ${err.message}` }, 500);
   }
 });
 
 // ─── DELETE /api/admin/gallery/:id  (admin only) ──────────────────────────────
 gallery.delete('/:id', requireAdmin, async (c) => {
-  const id = parseInt(c.req.param('id'));
-  if (!id || isNaN(id)) {
+  const id = c.req.param('id');
+  if (!id) {
     return c.json({ success: false, message: 'Invalid media ID.' }, 400);
   }
 
   try {
-    const db = getDB(c);
+    const col = await getCollection(c.env, 'gallery_images');
 
-    // Fetch record first (need public_id and media_type for Cloudinary deletion)
-    const row = await db.prepare('SELECT id, public_id, media_type, image_url FROM gallery_images WHERE id = ?').bind(id).first();
+    // Fetch record first (need publicId and mediaType for Cloudinary deletion)
+    const row = await col.findOne({
+      $or: [
+        { _id: id },
+        { id: id },
+      ],
+    });
+
     if (!row) {
       return c.json({ success: false, message: 'Item not found.' }, 404);
     }
 
-    const isVideo = row.media_type === 'video' || (row.image_url && row.image_url.includes('/video/'));
+    const isVideo = row.mediaType === 'video' || (row.imageUrl && row.imageUrl.includes('/video/'));
 
     // Delete from Cloudinary
-    try {
-      await deleteFromCloudinary(row.public_id, c.env, isVideo ? 'video' : 'image');
-    } catch (err) {
-      console.warn('Cloudinary delete failed (proceeding with DB deletion):', err.message);
+    if (row.publicId) {
+      try {
+        await deleteFromCloudinary(row.publicId, c.env, isVideo ? 'video' : 'image');
+      } catch (err) {
+        console.warn('Cloudinary delete failed (proceeding with DB deletion):', err.message);
+      }
     }
 
-    // Delete from D1
-    await db.prepare('DELETE FROM gallery_images WHERE id = ?').bind(id).run();
+    // Delete from MongoDB Atlas
+    await col.deleteOne({
+      $or: [
+        { _id: row._id || id },
+        { id: row.id || id },
+      ],
+    });
 
     return c.json({ success: true, message: 'Item deleted successfully.' });
   } catch (err) {
