@@ -28,29 +28,53 @@ const ALLOWED_VIDEO_TYPES = [
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
 
+// ─── GET /api/gallery/years  (public) ─────────────────────────────────────────
+gallery.get('/years', async (c) => {
+  try {
+    const db = getDB(c);
+    const rows = await db
+      .prepare('SELECT DISTINCT year FROM gallery_images WHERE year IS NOT NULL ORDER BY year DESC')
+      .all();
+    const years = (rows.results || []).map((r) => r.year);
+    return c.json({ success: true, years });
+  } catch (err) {
+    console.error('Gallery years fetch error:', err);
+    return c.json({ success: false, message: `Failed to load years: ${err.message}` }, 500);
+  }
+});
+
 // ─── GET /api/gallery  (public) ───────────────────────────────────────────────
 gallery.get('/', async (c) => {
   const page = Math.max(1, parseInt(c.req.query('page') || '1'));
   const limit = Math.min(50, Math.max(1, parseInt(c.req.query('limit') || '20')));
   const typeFilter = c.req.query('type'); // 'image' | 'video' | undefined
+  const yearFilter = c.req.query('year'); // e.g. '2024'
   const offset = (page - 1) * limit;
 
   try {
     const db = getDB(c);
 
-    let query = 'SELECT id, title, image_url, public_id, asset_id, original_filename, file_size, media_type, created_at FROM gallery_images';
-    let countQuery = 'SELECT COUNT(*) as total FROM gallery_images';
+    const conditions = [];
     const params = [];
     const countParams = [];
 
     if (typeFilter && ['image', 'video'].includes(typeFilter)) {
-      query += ' WHERE media_type = ?';
-      countQuery += ' WHERE media_type = ?';
+      conditions.push('media_type = ?');
       params.push(typeFilter);
       countParams.push(typeFilter);
     }
 
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    const yearNum = yearFilter ? parseInt(yearFilter) : NaN;
+    if (!isNaN(yearNum) && yearNum > 1900 && yearNum < 3000) {
+      conditions.push('year = ?');
+      params.push(yearNum);
+      countParams.push(yearNum);
+    }
+
+    const whereClause = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
+    const query = `SELECT id, title, image_url, public_id, asset_id, original_filename, file_size, media_type, year, created_at FROM gallery_images${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    const countQuery = `SELECT COUNT(*) as total FROM gallery_images${whereClause}`;
+
     params.push(limit, offset);
 
     const [rows, countRow] = await Promise.all([
@@ -76,6 +100,7 @@ gallery.get('/', async (c) => {
           originalFilename: r.original_filename,
           fileSize: r.file_size,
           mediaType: isVideo ? 'video' : 'image',
+          year: r.year || null,
           createdAt: r.created_at,
         };
       }),
@@ -101,6 +126,9 @@ gallery.post('/upload', requireAdmin, async (c) => {
 
   const file = formData.get('file') || formData.get('image') || formData.get('media');
   const title = (formData.get('title') || '').trim() || null;
+  const yearRaw = formData.get('year');
+  const year = yearRaw ? parseInt(yearRaw) : new Date().getFullYear();
+  const yearValue = (!isNaN(year) && year > 1900 && year < 3000) ? year : new Date().getFullYear();
 
   // Validate file presence
   if (!file || typeof file === 'string') {
@@ -146,7 +174,7 @@ gallery.post('/upload', requireAdmin, async (c) => {
   try {
     const db = getDB(c);
     const stmt = db.prepare(
-      'INSERT INTO gallery_images (title, image_url, public_id, asset_id, original_filename, file_size, media_type) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO gallery_images (title, image_url, public_id, asset_id, original_filename, file_size, media_type, year) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     );
     const result = await stmt.bind(
       title,
@@ -156,6 +184,7 @@ gallery.post('/upload', requireAdmin, async (c) => {
       file.name || null,
       arrayBuffer.byteLength,
       mediaType,
+      yearValue,
     ).run();
 
     return c.json({
@@ -169,6 +198,7 @@ gallery.post('/upload', requireAdmin, async (c) => {
         originalFilename: file.name,
         fileSize: arrayBuffer.byteLength,
         mediaType,
+        year: yearValue,
         createdAt: new Date().toISOString(),
       },
     }, 201);

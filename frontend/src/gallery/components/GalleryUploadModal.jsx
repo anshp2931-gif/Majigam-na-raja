@@ -13,6 +13,7 @@ export default function GalleryUploadModal({ onClose, onSuccess }) {
   const [preview, setPreview] = useState(null);
   const [isVideo, setIsVideo] = useState(false);
   const [title, setTitle] = useState('');
+  const [year, setYear] = useState(new Date().getFullYear());
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
 
@@ -52,6 +53,7 @@ export default function GalleryUploadModal({ onClose, onSuccess }) {
     const formData = new FormData();
     formData.append('file', file);
     if (title.trim()) formData.append('title', title.trim());
+    if (year) formData.append('year', year);
 
     try {
       const res = await uploadGalleryImage(formData);
@@ -171,19 +173,35 @@ export default function GalleryUploadModal({ onClose, onSuccess }) {
             </div>
           )}
 
-          {/* Optional title input */}
-          <div>
-            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">
-              Title / Caption <span className="font-normal text-gray-400 lowercase">(optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder={isVideo ? "e.g. Ganpati Aarti & Celebration 2026" : "e.g. Ganpati Visarjan Procession"}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={120}
-              className="input-field text-sm"
-            />
+          {/* Title and Year inputs */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">
+                Title / Caption <span className="font-normal text-gray-400 lowercase">(optional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder={isVideo ? "e.g. Ganpati Aarti 2024" : "e.g. Ganpati Visarjan Procession"}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={120}
+                className="input-field text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">
+                Year
+              </label>
+              <input
+                type="number"
+                min="1970"
+                max="2099"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                className="input-field text-sm font-semibold"
+                placeholder="2024"
+              />
+            </div>
           </div>
         </div>
 

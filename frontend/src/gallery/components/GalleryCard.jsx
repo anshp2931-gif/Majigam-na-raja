@@ -69,6 +69,13 @@ export default function GalleryCard({ image, index, onClick }) {
             </div>
           </>
         )}
+
+        {/* Year Badge */}
+        {image.year && (
+          <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-amber-400 text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full shadow-lg border border-amber-500/30 z-10">
+            {image.year}
+          </div>
+        )}
       </div>
 
       {/* Hover overlay */}

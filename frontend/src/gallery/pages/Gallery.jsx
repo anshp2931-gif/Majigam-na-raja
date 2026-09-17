@@ -2,13 +2,13 @@
 // Main landing page for UNITY A LIVE GROUP — Ganpati Photo & Video Gallery
 
 import { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, AlertCircle, Sparkles, Image as ImageIcon, Film, LayoutGrid } from 'lucide-react';
+import { RefreshCw, AlertCircle, Sparkles, Image as ImageIcon, Film, LayoutGrid, Calendar } from 'lucide-react';
 import Navbar from '../../components/Navbar.jsx';
 import GalleryHero from '../components/GalleryHero.jsx';
 import GalleryGrid from '../components/GalleryGrid.jsx';
 import GalleryLoader from '../components/GalleryLoader.jsx';
 import GalleryEmpty from '../components/GalleryEmpty.jsx';
-import { fetchGallery } from '../services/galleryApi.js';
+import { fetchGallery, fetchGalleryYears } from '../services/galleryApi.js';
 import { ButtonLoading } from '../../components/Loading.jsx';
 import Footer from '../../components/Footer.jsx';
 
@@ -21,8 +21,28 @@ export default function Gallery() {
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
   const [mediaFilter, setMediaFilter] = useState('all'); // 'all' | 'image' | 'video'
+  const [yearFilter, setYearFilter] = useState('all'); // 'all' | '2024' | etc.
+  const [yearsList, setYearsList] = useState([2024]);
 
-  const loadGalleryData = useCallback(async (pageNum = 1, append = false, filter = 'all') => {
+  // Load available celebration years
+  useEffect(() => {
+    async function loadYears() {
+      try {
+        const res = await fetchGalleryYears();
+        if (res.success && Array.isArray(res.years) && res.years.length > 0) {
+          const allYears = Array.from(new Set([...res.years, 2024])).sort((a, b) => b - a);
+          setYearsList(allYears);
+        } else {
+          setYearsList([2024]);
+        }
+      } catch {
+        setYearsList([2024]);
+      }
+    }
+    loadYears();
+  }, []);
+
+  const loadGalleryData = useCallback(async (pageNum = 1, append = false, filter = 'all', year = 'all') => {
     if (append) {
       setLoadingMore(true);
     } else {
@@ -33,6 +53,7 @@ export default function Gallery() {
     try {
       const params = { page: pageNum, limit: 20 };
       if (filter !== 'all') params.type = filter;
+      if (year !== 'all') params.year = year;
 
       const res = await fetchGallery(params);
       if (res.success) {
@@ -56,18 +77,24 @@ export default function Gallery() {
   }, []);
 
   useEffect(() => {
-    loadGalleryData(1, false, mediaFilter);
-  }, [loadGalleryData, mediaFilter]);
+    loadGalleryData(1, false, mediaFilter, yearFilter);
+  }, [loadGalleryData, mediaFilter, yearFilter]);
 
   const handleLoadMore = () => {
     if (!loadingMore && hasMore) {
-      loadGalleryData(page + 1, true, mediaFilter);
+      loadGalleryData(page + 1, true, mediaFilter, yearFilter);
     }
   };
 
   const handleFilterChange = (newFilter) => {
     if (newFilter === mediaFilter) return;
     setMediaFilter(newFilter);
+  };
+
+  const handleYearChange = (newYear) => {
+    const str = String(newYear);
+    if (str === yearFilter) return;
+    setYearFilter(str);
   };
 
   return (
@@ -79,7 +106,7 @@ export default function Gallery() {
 
       {/* Gallery Section */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-1 w-full">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 pb-4 border-b border-gray-200 gap-4">
           <div>
             <div className="flex items-center gap-2 text-ualg-gold font-bold text-xs uppercase tracking-widest mb-1">
               <Sparkles className="w-4 h-4" />
@@ -90,43 +117,75 @@ export default function Gallery() {
             </h2>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex items-center gap-2 bg-gray-100 p-1.5 rounded-2xl self-start md:self-auto border border-gray-200">
-            <button
-              onClick={() => handleFilterChange('all')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                mediaFilter === 'all'
-                  ? 'bg-white text-ualg-navy shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>All</span>
-            </button>
+          {/* Filter Controls: Year & Media Type */}
+          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+            {/* Year Filter Buttons */}
+            <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-2xl border border-gray-200 overflow-x-auto max-w-full">
+              <button
+                onClick={() => handleYearChange('all')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  yearFilter === 'all'
+                    ? 'bg-white text-ualg-navy shadow-sm'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                <span>All Years</span>
+              </button>
 
-            <button
-              onClick={() => handleFilterChange('image')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                mediaFilter === 'image'
-                  ? 'bg-white text-ualg-navy shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-              <span>Photos</span>
-            </button>
+              {yearsList.map((y) => (
+                <button
+                  key={y}
+                  onClick={() => handleYearChange(y)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                    yearFilter === String(y)
+                      ? 'bg-ualg-gold text-ualg-navy shadow-sm font-black'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/60'
+                  }`}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
 
-            <button
-              onClick={() => handleFilterChange('video')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                mediaFilter === 'video'
-                  ? 'bg-white text-ualg-navy shadow-sm'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              <Film className="w-3.5 h-3.5" />
-              <span>Videos</span>
-            </button>
+            {/* Media Type Filter Pills */}
+            <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-2xl border border-gray-200">
+              <button
+                onClick={() => handleFilterChange('all')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  mediaFilter === 'all'
+                    ? 'bg-white text-ualg-navy shadow-sm'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>All</span>
+              </button>
+
+              <button
+                onClick={() => handleFilterChange('image')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  mediaFilter === 'image'
+                    ? 'bg-white text-ualg-navy shadow-sm'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Photos</span>
+              </button>
+
+              <button
+                onClick={() => handleFilterChange('video')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  mediaFilter === 'video'
+                    ? 'bg-white text-ualg-navy shadow-sm'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>Videos</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -142,7 +201,7 @@ export default function Gallery() {
             <h3 className="text-lg font-bold text-gray-800 mb-2">Unable to Load Gallery</h3>
             <p className="text-gray-500 text-sm mb-6">{error}</p>
             <button
-              onClick={() => loadGalleryData(1, false, mediaFilter)}
+              onClick={() => loadGalleryData(1, false, mediaFilter, yearFilter)}
               className="btn-primary inline-flex items-center gap-2 text-sm"
             >
               <RefreshCw className="w-4 h-4" />

@@ -130,6 +130,7 @@ export default function GalleryLightbox({ images, currentIndex, onClose, onPrev,
           </p>
         )}
         <p className="text-gray-400 text-xs font-mono">
+          {item.year && <span className="text-amber-400 font-bold mr-2">[{item.year}]</span>}
           {currentIndex + 1} of {images.length}
         </p>
       </div>
