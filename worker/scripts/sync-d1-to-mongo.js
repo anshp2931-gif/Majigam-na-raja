@@ -15,17 +15,22 @@ async function run() {
   const rows = parsed[0]?.results || [];
   console.log(`Found ${rows.length} member(s) in Cloudflare D1.`);
 
-  if (rows.length === 0) {
-    console.log('No rows to sync.');
-    return;
-  }
-
   console.log('Connecting to MongoDB Atlas...');
   const client = new MongoClient(MONGODB_URI);
   await client.connect();
 
   const db = client.db(MONGODB_DB);
   const col = db.collection('registrations');
+
+  const d1UniqueIds = rows.map((r) => r.uniqueId);
+
+  // Delete any members in MongoDB that are no longer in D1
+  const deleteResult = await col.deleteMany({
+    uniqueId: { $nin: d1UniqueIds }
+  });
+  if (deleteResult.deletedCount > 0) {
+    console.log(`Deleted ${deleteResult.deletedCount} removed member(s) from MongoDB Atlas.`);
+  }
 
   let synced = 0;
   for (const row of rows) {
@@ -55,7 +60,7 @@ async function run() {
   }
 
   await client.close();
-  console.log(`Successfully synced ${synced} member(s) to MongoDB Atlas!`);
+  console.log(`MongoDB Atlas is now an exact mirror of Cloudflare D1 (${synced} active members).`);
 }
 
 run().catch((err) => {
